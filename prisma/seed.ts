@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, PaymentMethod } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
@@ -189,7 +189,7 @@ async function main() {
       date: new Date("2025-12-25T10:30:00"),
       totalAmount: 50000,
       totalCommission: 10000,
-      paymentMethod: "TUNAI",
+      paymentMethod: PaymentMethod.TUNAI,
       cashierId: cashier1.id,
       barberId: barber1.id,
       items: [
@@ -201,7 +201,7 @@ async function main() {
       date: new Date("2025-12-25T11:15:00"),
       totalAmount: 80000,
       totalCommission: 16000,
-      paymentMethod: "QRIS",
+      paymentMethod: PaymentMethod.QRIS,
       cashierId: cashier1.id,
       barberId: barber2.id,
       items: [
@@ -214,7 +214,7 @@ async function main() {
       date: new Date("2025-12-25T13:00:00"),
       totalAmount: 125000,
       totalCommission: 25000,
-      paymentMethod: "TUNAI",
+      paymentMethod: PaymentMethod.TUNAI,
       cashierId: cashier2.id,
       barberId: barber1.id,
       items: [
@@ -227,7 +227,7 @@ async function main() {
       date: new Date("2025-12-25T14:30:00"),
       totalAmount: 35000,
       totalCommission: 8750,
-      paymentMethod: "TUNAI",
+      paymentMethod: PaymentMethod.TUNAI,
       cashierId: cashier2.id,
       barberId: barber3.id,
       items: [
@@ -239,7 +239,7 @@ async function main() {
       date: new Date("2025-12-25T15:45:00"),
       totalAmount: 150000,
       totalCommission: 30000,
-      paymentMethod: "QRIS",
+      paymentMethod: PaymentMethod.QRIS,
       cashierId: cashier1.id,
       barberId: barber2.id,
       items: [
@@ -252,7 +252,7 @@ async function main() {
       date: new Date("2025-12-26T09:00:00"),
       totalAmount: 40000,
       totalCommission: 10000,
-      paymentMethod: "TUNAI",
+      paymentMethod: PaymentMethod.TUNAI,
       cashierId: cashier1.id,
       barberId: barber3.id,
       items: [
@@ -264,7 +264,7 @@ async function main() {
       date: new Date("2025-12-26T10:30:00"),
       totalAmount: 95000,
       totalCommission: 19000,
-      paymentMethod: "TUNAI",
+      paymentMethod: PaymentMethod.TUNAI,
       cashierId: cashier2.id,
       barberId: barber1.id,
       items: [
@@ -277,7 +277,7 @@ async function main() {
       date: new Date("2025-12-26T13:15:00"),
       totalAmount: 135000,
       totalCommission: 33750,
-      paymentMethod: "QRIS",
+      paymentMethod: PaymentMethod.QRIS,
       cashierId: cashier1.id,
       barberId: barber2.id,
       items: [
