@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server"
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit"
 import { logSecurityEvent } from "@/lib/security-logger"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   if (process.env.NODE_ENV === "production" && request.headers.get("x-forwarded-proto") !== "https") {
