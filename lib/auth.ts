@@ -159,7 +159,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (process.env.NODE_ENV === "production" && user) {
       }
     },
-    async signOut({ token }: { token: any }) {
+    async signOut(params: { session?: any; token?: any }) {
       if (process.env.NODE_ENV === "production") {
       }
     }
