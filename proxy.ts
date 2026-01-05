@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
 
   const session = await auth()
 
-  const isPublicRoute = ["/login", "/register"].includes(pathname)
+  const isPublicRoute = ["/", "/login", "/register"].includes(pathname)
   const isPosRoute = pathname.startsWith("/pos")
   const isOwnerRoute = pathname.startsWith("/dashboard") || 
                       pathname.startsWith("/transactions") ||
