@@ -85,7 +85,7 @@ export default function LoginPage() {
     }
   }
 
-  async function handleAttendance(type: "CHECK_IN" | "CHECK_OUT" | "PERMISSION" | "SICK") {
+  async function handleAttendance(type: "CHECK_IN" | "CHECK_OUT" | "PERMISSION" | "SICK" | "LEAVE") {
     if (!selectedBarber) {
       setAttendanceError("Silakan pilih barber")
       return
@@ -141,6 +141,9 @@ export default function LoginPage() {
           break
         case "SICK":
           successMessage = `Berhasil absen sakit - ${selectedBarber.name}`
+          break
+        case "LEAVE":
+          successMessage = `Berhasil absen libur - ${selectedBarber.name}`
           break
       }
 
@@ -334,6 +337,13 @@ export default function LoginPage() {
                     disabled={attendanceLoading || !selectedBarber}
                   >
                     {attendanceLoading ? "Memproses..." : "Absen Sakit"}
+                  </Button>
+                  <Button
+                    className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                    onClick={() => handleAttendance("LEAVE")}
+                    disabled={attendanceLoading || !selectedBarber}
+                  >
+                    {attendanceLoading ? "Memproses..." : "Absen Libur"}
                   </Button>
                 </div>
               )}

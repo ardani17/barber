@@ -12,7 +12,7 @@ interface Attendance {
   id: string
   barberId: string
   date: string
-  status: 'HADIR' | 'IZIN' | 'SAKIT' | 'ALPHA' | 'PULANG'
+  status: 'HADIR' | 'IZIN' | 'SAKIT' | 'LIBUR' | 'PULANG'
   checkIn: string | null
   checkOut: string | null
   notes: string | null
@@ -60,7 +60,7 @@ export default function AttendancePage() {
         return <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
       case 'SAKIT':
         return <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
-      case 'ALPHA':
+      case 'LIBUR':
         return <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
       default:
         return <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
@@ -77,7 +77,7 @@ export default function AttendancePage() {
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
       case 'SAKIT':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-      case 'ALPHA':
+      case 'LIBUR':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
@@ -97,7 +97,7 @@ export default function AttendancePage() {
       pulang: attendances.filter(a => a.status === 'PULANG').length,
       izin: attendances.filter(a => a.status === 'IZIN').length,
       sakit: attendances.filter(a => a.status === 'SAKIT').length,
-      alpha: attendances.filter(a => a.status === 'ALPHA').length
+      libur: attendances.filter(a => a.status === 'LIBUR').length
     }
     return stats
   }
@@ -166,8 +166,8 @@ export default function AttendancePage() {
               <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.alpha}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Alpha</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.libur}</p>
+              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Libur</p>
             </div>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function AttendancePage() {
                 <SelectItem value="PULANG">Pulang</SelectItem>
                 <SelectItem value="IZIN">Izin</SelectItem>
                 <SelectItem value="SAKIT">Sakit</SelectItem>
-                <SelectItem value="ALPHA">Alpha</SelectItem>
+                <SelectItem value="LIBUR">Libur</SelectItem>
               </SelectContent>
             </Select>
           </div>

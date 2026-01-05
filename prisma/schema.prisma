@@ -61,6 +61,7 @@ enum AttendanceType {
   CHECK_OUT
   PERMISSION
   SICK
+  LEAVE
 }
 
 enum CompensationType {

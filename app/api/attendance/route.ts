@@ -6,7 +6,7 @@ import Decimal from "decimal.js"
 
 const attendanceSchema = z.object({
   barberId: z.string(),
-  type: z.enum(["CHECK_IN", "CHECK_OUT", "PERMISSION", "SICK"])
+  type: z.enum(["CHECK_IN", "CHECK_OUT", "PERMISSION", "SICK", "LEAVE"])
 })
 
 export async function GET(request: NextRequest) {

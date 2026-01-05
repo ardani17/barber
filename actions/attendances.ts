@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-type AttendanceStatus = "HADIR" | "IZIN" | "SAKIT" | "ALPHA" | "PULANG"
+type AttendanceStatus = "HADIR" | "IZIN" | "SAKIT" | "LIBUR" | "PULANG"
 
 export async function getAttendances(barberId?: string, date?: string) {
   const session = await auth()
@@ -78,6 +78,11 @@ export async function getAttendances(barberId?: string, date?: string) {
           break
         case "SICK":
           existing.status = "SAKIT"
+          existing.checkIn = null
+          existing.checkOut = null
+          break
+        case "LEAVE":
+          existing.status = "LIBUR"
           existing.checkIn = null
           existing.checkOut = null
           break

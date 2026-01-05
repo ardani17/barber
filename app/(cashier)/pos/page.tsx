@@ -121,7 +121,7 @@ export default function POSPage() {
     setShowBarberSelector(false)
   }
 
-  const handleAttendance = async (type: "CHECK_IN" | "CHECK_OUT" | "PERMISSION" | "SICK") => {
+  const handleAttendance = async (type: "CHECK_IN" | "CHECK_OUT" | "PERMISSION" | "SICK" | "LEAVE") => {
     if (!attendanceBarber) {
       setAttendanceError("Silakan pilih barber")
       return
@@ -177,6 +177,9 @@ export default function POSPage() {
           break
         case "SICK":
           successMessage = `Berhasil absen sakit - ${attendanceBarber.name}`
+          break
+        case "LEAVE":
+          successMessage = `Berhasil absen libur - ${attendanceBarber.name}`
           break
       }
 
@@ -1018,6 +1021,13 @@ export default function POSPage() {
                     disabled={attendanceLoading || !attendanceBarber}
                   >
                     {attendanceLoading ? "Memproses..." : "Absen Sakit"}
+                  </Button>
+                  <Button
+                    className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                    onClick={() => handleAttendance("LEAVE")}
+                    disabled={attendanceLoading || !attendanceBarber}
+                  >
+                    {attendanceLoading ? "Memproses..." : "Absen Libur"}
                   </Button>
                 </div>
               )}
