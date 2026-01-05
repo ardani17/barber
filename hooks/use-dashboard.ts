@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getDashboardStats, getDailyRevenue, getRevenueByBarber } from "@/actions/dashboard"
-import { getExpenses } from "@/actions/expenses"
+import { getDashboardStats, getDailyRevenue, getRevenueByBarber, getTopServices, getTopProducts, getRevenueByPaymentMethod } from "@/actions/dashboard"
+import { getExpenses, getExpensesByCategory } from "@/actions/expenses"
 import type { DateRangeType } from "@/types"
 
 interface DashboardMetrics {
@@ -24,10 +24,22 @@ interface CommissionData {
   commission: number
 }
 
+interface RevenueBreakdown {
+  topServices: Array<{ name: string; quantity: number; revenue: string }>
+  topProducts: Array<{ name: string; quantity: number; revenue: string }>
+  paymentMethods: Array<{ paymentMethod: string; totalRevenue: string; transactionCount: number }>
+}
+
+interface ExpensesBreakdown {
+  categories: Array<{ category: string; categoryLabel: string; totalAmount: string; count: number }>
+}
+
 interface DashboardData {
   metrics: DashboardMetrics
   cashflowData: CashflowData[]
   commissionData: CommissionData[]
+  revenueBreakdown: RevenueBreakdown
+  expensesBreakdown: ExpensesBreakdown
 }
 
 export function useDashboard(selectedRange: DateRangeType, customStartDate?: Date, customEndDate?: Date) {
@@ -40,7 +52,15 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
       revenueGrowth: "0"
     },
     cashflowData: [],
-    commissionData: []
+    commissionData: [],
+    revenueBreakdown: {
+      topServices: [],
+      topProducts: [],
+      paymentMethods: []
+    },
+    expensesBreakdown: {
+      categories: []
+    }
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -80,11 +100,15 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
           endDate = new Date(now.setHours(23, 59, 59, 999))
       }
 
-      const [stats, dailyRevenue, barberRevenue, expenses] = await Promise.all([
+      const [stats, dailyRevenue, barberRevenue, expenses, topServices, topProducts, paymentMethods, expensesByCategory] = await Promise.all([
         getDashboardStats({ startDate, endDate }),
         getDailyRevenue(startDate, endDate),
         getRevenueByBarber(startDate, endDate),
-        getExpenses({ startDate, endDate })
+        getExpenses({ startDate, endDate }),
+        getTopServices(startDate, endDate),
+        getTopProducts(startDate, endDate),
+        getRevenueByPaymentMethod(startDate, endDate),
+        getExpensesByCategory(startDate, endDate)
       ])
 
       const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0)
@@ -116,7 +140,15 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
           revenueGrowth: stats.revenueGrowth
         },
         cashflowData: formattedCashflow,
-        commissionData: formattedCommission
+        commissionData: formattedCommission,
+        revenueBreakdown: {
+          topServices,
+          topProducts,
+          paymentMethods
+        },
+        expensesBreakdown: {
+          categories: expensesByCategory
+        }
       })
     } catch (err) {
       setError("Terjadi kesalahan saat memuat data dashboard")

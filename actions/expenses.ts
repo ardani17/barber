@@ -199,3 +199,44 @@ export async function getExpenses(params: z.infer<typeof getExpensesSchema>) {
     accountName: expense.account?.name
   }))
 }
+
+export async function getExpensesByCategory(startDate: Date, endDate: Date) {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
+  }
+
+  try {
+    const expenses = await prisma.expense.groupBy({
+      by: ["category"],
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      _sum: {
+        amount: true
+      },
+      _count: true
+    })
+
+    const categoryLabels: Record<string, string> = {
+      RENT: "Sewa Kontrakan",
+      UTILITIES: "Utilitas",
+      SUPPLIES: "Perlengkapan",
+      OTHER: "Lainnya"
+    }
+
+    return expenses.map(expense => ({
+      category: expense.category,
+      categoryLabel: categoryLabels[expense.category] || expense.category,
+      totalAmount: expense._sum.amount?.toString() || "0",
+      count: expense._count
+    })).sort((a, b) => parseFloat(b.totalAmount) - parseFloat(a.totalAmount))
+  } catch (error) {
+    console.error("Error fetching expenses by category:", error)
+    throw new Error("Gagal mengambil data pengeluaran per kategori")
+  }
+}

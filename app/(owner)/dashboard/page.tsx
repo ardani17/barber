@@ -7,6 +7,8 @@ import { MetricCard } from "@/components/owner/metric-card"
 import { ChartContainer } from "@/components/owner/chart-container"
 import { CashflowChart } from "@/components/owner/charts/cashflow-chart"
 import { CommissionChart } from "@/components/owner/charts/commission-chart"
+import { RevenueBreakdown } from "@/components/owner/revenue-breakdown"
+import { ExpensesBreakdown } from "@/components/owner/expenses-breakdown"
 import { useDashboard } from "@/hooks/use-dashboard"
 import type { DateRangeType } from "@/types"
 
@@ -93,6 +95,20 @@ export default function DashboardPage() {
         >
           <CommissionChart data={data.commissionData} />
         </ChartContainer>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <RevenueBreakdown
+          topServices={data.revenueBreakdown.topServices}
+          topProducts={data.revenueBreakdown.topProducts}
+          paymentMethods={data.revenueBreakdown.paymentMethods}
+          loading={loading}
+        />
+
+        <ExpensesBreakdown
+          categories={data.expensesBreakdown.categories}
+          loading={loading}
+        />
       </div>
     </div>
   )
