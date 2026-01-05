@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, Scissors, Package, Plus, Minus, Trash2, User, Check, History, Calendar } from "lucide-react"
 import { formatCurrency } from "@/lib/decimal"
+import { getDailySummary } from "@/actions/transactions"
 
 
 
@@ -17,6 +18,8 @@ export default function POSPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [transactions, setTransactions] = useState<any[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
+  const [dailySummary, setDailySummary] = useState<any>(null)
+  const [loadingSummary, setLoadingSummary] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"TUNAI" | "QRIS">("TUNAI")
   const [isProcessing, setIsProcessing] = useState(false)
   const { items, selectedBarber, addItem, removeItem, updateQuantity, setBarber, getTotal, clearCart, removeItemsByTypeAndIds } = useCartStore()
@@ -266,16 +269,38 @@ export default function POSPage() {
     }
   }
 
+  const loadDailySummary = async (date: Date) => {
+    setLoadingSummary(true)
+    try {
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
+
+      const summary = await getDailySummary({
+        startDate: startOfDay,
+        endDate: endOfDay
+      })
+      setDailySummary(summary)
+    } catch (error) {
+      console.error("Error loading daily summary:", error)
+    } finally {
+      setLoadingSummary(false)
+    }
+  }
+
   const handleViewModeChange = (mode: "pos" | "history") => {
     setViewMode(mode)
     if (mode === "history") {
       loadTransactions(selectedDate)
+      loadDailySummary(selectedDate)
     }
   }
 
   useEffect(() => {
     if (viewMode === "history") {
       loadTransactions(selectedDate)
+      loadDailySummary(selectedDate)
     }
   }, [selectedDate, viewMode])
 
@@ -294,9 +319,9 @@ export default function POSPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold text-black dark:text-white">Kasir</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-black dark:text-white">Kasir</h2>
           <div className="flex bg-white dark:bg-gray-800 rounded-lg border border-yellow-500 p-1">
             <Button
               size="sm"
@@ -308,8 +333,8 @@ export default function POSPage() {
                   : "text-black dark:text-white hover:bg-yellow-100"
               }
             >
-              <Scissors className="h-4 w-4 mr-2" />
-              Input
+              <Scissors className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Input</span>
             </Button>
             <Button
               size="sm"
@@ -321,25 +346,25 @@ export default function POSPage() {
                   : "text-black dark:text-white hover:bg-yellow-100"
               }
             >
-              <History className="h-4 w-4 mr-2" />
-              Riwayat
+              <History className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Riwayat</span>
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-yellow-500">
-            <User className="h-5 w-5 text-yellow-500" />
-            <span className="text-sm font-medium text-black dark:text-white">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-2 sm:px-3 py-2 border border-yellow-500">
+            <User className="h-4 sm:h-5 w-4 sm:w-5 text-yellow-500" />
+            <span className="text-xs sm:text-sm font-medium text-black dark:text-white truncate">
               {selectedBarber ? selectedBarber.name : "Pilih Barber"}
             </span>
             {!selectedBarber && (
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0"
+                className="h-5 w-5 sm:h-6 sm:w-6 p-0"
                 onClick={() => setShowBarberSelector(true)}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3 sm:h-4 w-3 sm:w-4" />
               </Button>
             )}
           </div>
@@ -348,100 +373,166 @@ export default function POSPage() {
             className="bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => setShowAttendance(true)}
           >
-            <Check className="h-4 w-4 mr-2" />
-            Absen Capster
+            <Check className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Absen Capster</span>
           </Button>
         </div>
       </div>
 
       {viewMode === "history" ? (
-        <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-black dark:text-white">Riwayat Transaksi</CardTitle>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-yellow-500" />
-                <input
-                  type="date"
-                  value={selectedDate.toISOString().split('T')[0]}
-                  onChange={(e) => {
-                    const newDate = new Date(e.target.value)
-                    handleDateChange(newDate)
-                    loadTransactions(newDate)
-                  }}
-                  className="border border-yellow-500 rounded-lg px-3 py-2 text-sm text-black dark:text-white"
-                />
+        <>
+          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <CardTitle className="text-lg sm:text-xl text-black dark:text-white">Riwayat Transaksi</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                  <input
+                    type="date"
+                    value={selectedDate.toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      const newDate = new Date(e.target.value)
+                      handleDateChange(newDate)
+                      loadTransactions(newDate)
+                      loadDailySummary(newDate)
+                    }}
+                    className="border border-yellow-500 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-black dark:text-white"
+                  />
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingHistory ? (
-              <div className="text-center py-8 text-gray-500">
-                Memuat transaksi...
-              </div>
-            ) : transactions.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Tidak ada transaksi pada tanggal ini
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {transactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="border border-yellow-500 rounded-lg p-4 space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-black dark:text-white">
-                          {new Date(transaction.date).toISOString().split('T')[0]} {String(transaction.transactionNumber).padStart(2, '0')}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(transaction.date).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
-                        </p>
+            </CardHeader>
+            <CardContent>
+              {loadingHistory ? (
+                <div className="text-center py-8 text-gray-500">
+                  Memuat transaksi...
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Tidak ada transaksi pada tanggal ini
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="border border-yellow-500 rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-black dark:text-white">
+                            {new Date(transaction.date).toISOString().split('T')[0]} {String(transaction.transactionNumber).padStart(2, '0')}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(transaction.date).toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-yellow-500">
+                            {formatCurrency(transaction.totalAmount)}
+                          </p>
+                          <Badge variant="outline" className="text-xs">
+                            {transaction.paymentMethod}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-yellow-500">
-                          {formatCurrency(transaction.totalAmount)}
-                        </p>
-                        <Badge variant="outline" className="text-xs">
-                          {transaction.paymentMethod}
-                        </Badge>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>Barber: {transaction.barberName}</p>
+                        <p>Kasir: {transaction.cashierName}</p>
+                      </div>
+                      <div className="border-t border-gray-200 pt-3">
+                        <p className="text-sm font-medium text-black dark:text-white mb-2">Item:</p>
+                        <div className="space-y-1">
+                          {transaction.items.map((item: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex justify-between text-sm text-gray-600"
+                            >
+                              <span>
+                                {item.name} x{item.quantity}
+                              </span>
+                              <span>{formatCurrency(item.subtotal)}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>Barber: {transaction.barberName}</p>
-                      <p>Kasir: {transaction.cashierName}</p>
-                    </div>
-                    <div className="border-t border-gray-200 pt-3">
-                      <p className="text-sm font-medium text-black dark:text-white mb-2">Item:</p>
-                      <div className="space-y-1">
-                        {transaction.items.map((item: any, index: number) => (
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg mt-4">
+            <CardHeader>
+              <CardTitle className="text-black dark:text-white">
+                Riwayat Transaksi per Hari - {selectedDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingSummary ? (
+                <div className="text-center py-8 text-gray-500">
+                  Memuat ringkasan...
+                </div>
+              ) : dailySummary ? (
+                <div className="space-y-4">
+                  {dailySummary.services.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
+                        <Scissors className="h-4 w-4 text-yellow-500" />
+                        Layanan
+                      </p>
+                      <div className="space-y-2">
+                        {dailySummary.services.map((service: any, index: number) => (
                           <div
                             key={index}
-                            className="flex justify-between text-sm text-gray-600"
+                            className="flex justify-between items-center bg-gray-50 rounded-lg px-4 py-2"
                           >
-                            <span>
-                              {item.name} x{item.quantity}
-                            </span>
-                            <span>{formatCurrency(item.subtotal)}</span>
+                            <span className="text-sm text-black dark:text-white">{service.name}</span>
+                            <span className="text-sm font-semibold text-yellow-600">{service.quantity}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  )}
+
+                  {dailySummary.products.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
+                        <Package className="h-4 w-4 text-yellow-500" />
+                        Produk
+                      </p>
+                      <div className="space-y-2">
+                        {dailySummary.products.map((product: any, index: number) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center bg-gray-50 rounded-lg px-4 py-2"
+                          >
+                            <span className="text-sm text-black dark:text-white">{product.name}</span>
+                            <span className="text-sm font-semibold text-yellow-600">{product.quantity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {dailySummary.services.length === 0 && dailySummary.products.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      Tidak ada data penjualan pada tanggal ini
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </>
       ) : (
         <>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
           <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg">
             <CardHeader>
               <div className="flex gap-2">
@@ -454,8 +545,8 @@ export default function POSPage() {
                       : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
                   }
                 >
-                  <Scissors className="h-4 w-4 mr-2" />
-                  Layanan
+                  <Scissors className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Layanan</span>
                 </Button>
                 <Button
                   variant={activeTab === "products" ? "default" : "outline"}
@@ -467,13 +558,13 @@ export default function POSPage() {
                       : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
                   }
                 >
-                  <Package className="h-4 w-4 mr-2" />
-                  Produk
+                  <Package className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Produk</span>
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
                 {activeTab === "services" &&
                   services.map((service) => (
                     <Button
@@ -523,51 +614,51 @@ export default function POSPage() {
           </Card>
         </div>
 
-        <div className="lg:col-span-1">
-          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg sticky top-20">
+        <div className="lg:col-span-1 order-1 lg:order-2">
+          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg sticky top-4 lg:top-20">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-black dark:text-white">
-                <ShoppingCart className="h-5 w-5 text-yellow-500" />
-                Cart
+              <CardTitle className="flex items-center gap-2 text-black dark:text-white text-lg sm:text-xl">
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                <span className="hidden sm:inline">Cart</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {items.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Keranjang kosong
                 </div>
               ) : (
                 <>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-black dark:text-white truncate">
+                          <p className="text-xs sm:text-sm font-medium text-black dark:text-white truncate">
                             {item.name}
                           </p>
                           <p className="text-xs text-gray-600">
                             {formatCurrency(item.price)} x {item.quantity}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5 sm:gap-1">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-7 w-7 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="text-sm font-medium w-6 text-center">
+                          <span className="text-xs sm:text-sm font-medium w-5 sm:w-6 text-center">
                             {item.quantity}
                           </span>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6"
+                            className="h-7 w-7 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
                             <Plus className="h-3 w-3" />
@@ -575,7 +666,7 @@ export default function POSPage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6 text-red-500 hover:text-red-600"
+                            className="h-7 w-7 sm:h-6 sm:w-6 text-red-500 hover:text-red-600"
                             onClick={() => removeItem(item.id)}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -585,8 +676,8 @@ export default function POSPage() {
                     ))}
                   </div>
 
-                  <div className="border-t border-gray-200 pt-4 space-y-2">
-                    <div className="flex justify-between text-lg font-bold">
+                  <div className="border-t border-gray-200 pt-3 sm:pt-4 space-y-2">
+                    <div className="flex justify-between text-base sm:text-lg font-bold">
                       <span className="text-black dark:text-white">Total</span>
                       <span className="text-yellow-500">
                         {formatCurrency(getTotal())}
@@ -595,8 +686,8 @@ export default function POSPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-black dark:text-white">Metode Pembayaran:</p>
-                    <div className="flex gap-2">
+                    <p className="text-xs sm:text-sm font-medium text-black dark:text-white">Metode Pembayaran:</p>
+                    <div className="flex gap-1.5 sm:gap-2">
                       <Button
                         type="button"
                         variant={selectedPaymentMethod === "TUNAI" ? "default" : "outline"}
@@ -607,8 +698,8 @@ export default function POSPage() {
                         }`}
                         onClick={() => setSelectedPaymentMethod("TUNAI")}
                       >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Tunai
+                        <ShoppingCart className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Tunai</span>
                       </Button>
                       <Button
                         type="button"
@@ -620,14 +711,14 @@ export default function POSPage() {
                         }`}
                         onClick={() => setSelectedPaymentMethod("QRIS")}
                       >
-                        <Package className="h-4 w-4 mr-2" />
-                        QRIS
+                        <Package className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">QRIS</span>
                       </Button>
                     </div>
                   </div>
 
                   <Button
-                    className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 font-semibold"
+                    className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 font-semibold text-sm sm:text-base"
                     size="lg"
                     onClick={handleCheckout}
                     disabled={items.length === 0}
@@ -645,25 +736,25 @@ export default function POSPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
             <CardHeader>
-              <CardTitle className="text-black dark:text-white">Pilih Barber</CardTitle>
+              <CardTitle className="text-lg sm:text-xl text-black dark:text-white">Pilih Barber</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 sm:space-y-3">
               {barbers.map((barber) => (
                 <Button
                   key={barber.id}
                   variant="outline"
-                  className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
+                  className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white h-12 sm:h-auto"
                   onClick={() => handleBarberSelect(barber)}
                 >
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-yellow-500" />
-                    <span>{barber.name}</span>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                    <span className="text-sm sm:text-base">{barber.name}</span>
                   </div>
                 </Button>
               ))}
               <Button
                 variant="ghost"
-                className="w-full"
+                className="w-full text-sm sm:text-base"
                 onClick={() => setShowBarberSelector(false)}
               >
                 Batal
@@ -678,19 +769,19 @@ export default function POSPage() {
           <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
             <CardHeader>
               <CardTitle className="text-center text-black dark:text-white">
-                <div className="text-2xl font-bold mb-2">Konfirmasi Checkout</div>
-                <div className="text-sm font-normal text-red-500">
+                <div className="text-xl sm:text-2xl font-bold mb-2">Konfirmasi Checkout</div>
+                <div className="text-xs sm:text-sm font-normal text-red-500">
                   Periksa kembali pesanan Anda sebelum melanjutkan
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border-b border-gray-200 pb-4 space-y-2">
-                <div className="flex justify-between text-sm">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="border-b border-gray-200 pb-3 sm:pb-4 space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Barber:</span>
                   <span className="font-medium text-black dark:text-white">{selectedBarber?.name}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Jumlah Item:</span>
                   <span className="font-medium text-black dark:text-white">
                     {items.reduce((acc, item) => acc + item.quantity, 0)} item
@@ -700,10 +791,10 @@ export default function POSPage() {
 
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm border-b border-gray-100 pb-2">
+                  <div key={item.id} className="flex justify-between text-xs sm:text-sm border-b border-gray-100 pb-2">
                     <div className="flex-1">
                       <span className="text-black dark:text-white">{item.name}</span>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1 sm:gap-2 mt-1">
                         <span className="text-xs text-gray-500">x{item.quantity}</span>
                         {item.type === "service" && (
                           <Badge variant="outline" className="text-xs">Layanan</Badge>
@@ -720,14 +811,14 @@ export default function POSPage() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-200 pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
+              <div className="border-t border-gray-200 pt-3 sm:pt-4 space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Metode Pembayaran:</span>
                   <span className="font-medium text-black dark:text-white">
                     {selectedPaymentMethod === "TUNAI" ? "Tunai" : "QRIS"}
                   </span>
                 </div>
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-base sm:text-lg font-bold">
                   <span className="text-black dark:text-white">Total Pembayaran</span>
                   <span className="text-yellow-500">
                     {formatCurrency(getTotal())}
@@ -735,8 +826,8 @@ export default function POSPage() {
                 </div>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-2 sm:p-3">
+                <p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200 font-medium">
                   Apakah data pesanan sudah benar?
                 </p>
               </div>
@@ -744,21 +835,22 @@ export default function POSPage() {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1 border-gray-300 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 border-gray-300 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 text-sm sm:text-base"
                   onClick={() => setShowCheckoutConfirm(false)}
                   disabled={isProcessing}
                 >
                   Periksa Ulang
                 </Button>
                 <Button
-                  className="flex-1 bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                  className="flex-1 bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 text-sm sm:text-base"
                   onClick={handleConfirmCheckout}
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
                     <>
                       <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                      Memproses...
+                      <span className="hidden sm:inline">Memproses...</span>
+                      <span className="sm:hidden">Memproses</span>
                     </>
                   ) : (
                     <>

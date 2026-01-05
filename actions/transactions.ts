@@ -170,3 +170,73 @@ export async function getCashiers() {
     username: cashier.username
   }))
 }
+
+const getDailySummarySchema = z.object({
+  startDate: z.date(),
+  endDate: z.date()
+})
+
+export async function getDailySummary(params: z.infer<typeof getDailySummarySchema>) {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
+  }
+
+  const { startDate, endDate } = getDailySummarySchema.parse(params)
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      date: {
+        gte: startDate,
+        lte: endDate
+      }
+    },
+    include: {
+      items: {
+        include: {
+          service: true,
+          product: true
+        }
+      }
+    },
+    orderBy: {
+      date: "desc"
+    }
+  })
+
+  const services: Record<string, number> = {}
+  const products: Record<string, number> = {}
+
+  transactions.forEach(transaction => {
+    transaction.items.forEach(item => {
+      if (item.type === "SERVICE" && item.service) {
+        services[item.service.name] = (services[item.service.name] || 0) + item.quantity
+      } else if (item.type === "PRODUCT" && item.product) {
+        products[item.product.name] = (products[item.product.name] || 0) + item.quantity
+      }
+    })
+  })
+
+  const servicesList = Object.entries(services).map(([name, quantity]) => ({
+    name,
+    quantity
+  })).sort((a, b) => b.quantity - a.quantity)
+
+  const productsList = Object.entries(products).map(([name, quantity]) => ({
+    name,
+    quantity
+  })).sort((a, b) => b.quantity - a.quantity)
+
+  const totalTransactions = transactions.length
+  const totalRevenue = transactions.reduce((sum, t) => sum.plus(t.totalAmount), new Decimal(0)).toString()
+  const totalCommission = transactions.reduce((sum, t) => sum.plus(t.totalCommission), new Decimal(0)).toString()
+
+  return {
+    services: servicesList,
+    products: productsList,
+    totalTransactions,
+    totalRevenue,
+    totalCommission
+  }
+}
