@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
+import { unstable_cache } from "next/cache"
+import { getExpenses, getExpensesByCategory } from "./expenses"
 
 const getDashboardStatsSchema = z.object({
   startDate: z.date().optional(),
@@ -117,6 +119,61 @@ export async function getDashboardStats(params: z.infer<typeof getDashboardStats
     console.error("Error fetching dashboard stats:", error)
     throw new Error("Gagal mengambil data dashboard")
   }
+}
+
+export interface DashboardData {
+  stats: Awaited<ReturnType<typeof getDashboardStats>>
+  dailyRevenue: Awaited<ReturnType<typeof getDailyRevenue>>
+  barberRevenue: Awaited<ReturnType<typeof getRevenueByBarber>>
+  expenses: Awaited<ReturnType<typeof getExpenses>>
+  topServices: Awaited<ReturnType<typeof getTopServices>>
+  topProducts: Awaited<ReturnType<typeof getTopProducts>>
+  paymentMethods: Awaited<ReturnType<typeof getRevenueByPaymentMethod>>
+  expensesByCategory: Awaited<ReturnType<typeof getExpensesByCategory>>
+}
+
+export async function getDashboardData(params: {
+  startDate: Date
+  endDate: Date
+}): Promise<DashboardData> {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized")
+  }
+
+  const cacheKey = `${params.startDate.getTime()}-${params.endDate.getTime()}`
+
+  return unstable_cache(
+    async () => {
+      const [stats, dailyRevenue, barberRevenue, expenses, topServices, topProducts, paymentMethods, expensesByCategory] = await Promise.all([
+        getDashboardStats(params),
+        getDailyRevenue(params.startDate, params.endDate),
+        getRevenueByBarber(params.startDate, params.endDate),
+        getExpenses(params),
+        getTopServices(params.startDate, params.endDate, 10),
+        getTopProducts(params.startDate, params.endDate, 10),
+        getRevenueByPaymentMethod(params.startDate, params.endDate),
+        getExpensesByCategory(params.startDate, params.endDate)
+      ])
+
+      return {
+        stats,
+        dailyRevenue,
+        barberRevenue,
+        expenses,
+        topServices,
+        topProducts,
+        paymentMethods,
+        expensesByCategory
+      }
+    },
+    [`dashboard-${cacheKey}`],
+    {
+      revalidate: 300,
+      tags: ['dashboard', `dashboard-${cacheKey}`]
+    }
+  )()
 }
 
 export async function getRevenueByBarber(startDate: Date, endDate: Date) {
@@ -250,7 +307,8 @@ export async function getTopServices(startDate: Date, endDate: Date, limit: numb
   }
 
   try {
-    const transactionItems = await prisma.transactionItem.findMany({
+    const groupedResults = await prisma.transactionItem.groupBy({
+      by: ["serviceId"],
       where: {
         type: "SERVICE",
         transaction: {
@@ -260,31 +318,38 @@ export async function getTopServices(startDate: Date, endDate: Date, limit: numb
           }
         }
       },
-      include: {
-        service: true
+      _sum: {
+        quantity: true,
+        subtotal: true
       }
     })
 
-    const serviceStats = new Map<string, { name: string; quantity: number; revenue: Decimal }>()
+    const serviceIds = groupedResults.filter(r => r.serviceId).map(r => r.serviceId!)
 
-    transactionItems.forEach(item => {
-      const serviceId = item.serviceId
-      if (!serviceId) return
-      const current = serviceStats.get(serviceId) || {
-        name: item.service?.name || "Unknown",
-        quantity: 0,
-        revenue: new Decimal(0)
+    if (serviceIds.length === 0) {
+      return []
+    }
+
+    const services = await prisma.service.findMany({
+      where: {
+        id: {
+          in: serviceIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
       }
-      current.quantity += item.quantity
-      current.revenue = current.revenue.plus(item.subtotal)
-      serviceStats.set(serviceId, current)
     })
 
-    return Array.from(serviceStats.values())
-      .map(s => ({
-        name: s.name,
-        quantity: s.quantity,
-        revenue: s.revenue.toString()
+    const serviceMap = new Map(services.map(s => [s.id, s.name]))
+
+    return groupedResults
+      .filter(r => r.serviceId !== null)
+      .map(r => ({
+        name: serviceMap.get(r.serviceId!) || "Unknown",
+        quantity: r._sum.quantity || 0,
+        revenue: r._sum.subtotal?.toString() || "0"
       }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, limit)
@@ -302,7 +367,8 @@ export async function getTopProducts(startDate: Date, endDate: Date, limit: numb
   }
 
   try {
-    const transactionItems = await prisma.transactionItem.findMany({
+    const groupedResults = await prisma.transactionItem.groupBy({
+      by: ["productId"],
       where: {
         type: "PRODUCT",
         transaction: {
@@ -312,31 +378,38 @@ export async function getTopProducts(startDate: Date, endDate: Date, limit: numb
           }
         }
       },
-      include: {
-        product: true
+      _sum: {
+        quantity: true,
+        subtotal: true
       }
     })
 
-    const productStats = new Map<string, { name: string; quantity: number; revenue: Decimal }>()
+    const productIds = groupedResults.filter(r => r.productId).map(r => r.productId!)
 
-    transactionItems.forEach(item => {
-      const productId = item.productId
-      if (!productId) return
-      const current = productStats.get(productId) || {
-        name: item.product?.name || "Unknown",
-        quantity: 0,
-        revenue: new Decimal(0)
+    if (productIds.length === 0) {
+      return []
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
       }
-      current.quantity += item.quantity
-      current.revenue = current.revenue.plus(item.subtotal)
-      productStats.set(productId, current)
     })
 
-    return Array.from(productStats.values())
-      .map(p => ({
-        name: p.name,
-        quantity: p.quantity,
-        revenue: p.revenue.toString()
+    const productMap = new Map(products.map(p => [p.id, p.name]))
+
+    return groupedResults
+      .filter(r => r.productId !== null)
+      .map(r => ({
+        name: productMap.get(r.productId!) || "Unknown",
+        quantity: r._sum.quantity || 0,
+        revenue: r._sum.subtotal?.toString() || "0"
       }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, limit)
