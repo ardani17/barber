@@ -38,11 +38,14 @@ export async function getDashboardStats(params: z.infer<typeof getDashboardStats
 
   const dateFilter = startDate && endDate ? { gte: startDate, lte: endDate } : undefined
 
+  const useDateRange = !!dateFilter
+  const queryDateFilter = useDateRange ? dateFilter : { gte: startOfMonth, lte: endOfMonth }
+
   try {
     const [todayRevenue, monthRevenue, lastMonthRevenue, totalTransactions, activeBarbers, lowStockProducts] = await Promise.all([
       prisma.transaction.aggregate({
         where: {
-          date: {
+          date: useDateRange ? queryDateFilter : {
             gte: startOfToday,
             lte: endOfToday
           }
@@ -54,10 +57,7 @@ export async function getDashboardStats(params: z.infer<typeof getDashboardStats
       }),
       prisma.transaction.aggregate({
         where: {
-          date: dateFilter || {
-            gte: startOfMonth,
-            lte: endOfMonth
-          }
+          date: queryDateFilter
         },
         _sum: {
           totalAmount: true,
@@ -78,10 +78,7 @@ export async function getDashboardStats(params: z.infer<typeof getDashboardStats
       }),
       prisma.transaction.count({
         where: {
-          date: dateFilter || {
-            gte: startOfMonth,
-            lte: endOfMonth
-          }
+          date: queryDateFilter
         }
       }),
       prisma.barber.count({
