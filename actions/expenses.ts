@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { revalidatePath } from "next/cache"
+import { invalidateDashboardCache, invalidateExpenseCache } from "@/lib/redis"
 
 const createExpenseSchema = z.object({
   title: z.string().min(1, "Judul harus diisi"),
@@ -75,6 +76,9 @@ export async function createExpense(params: z.infer<typeof createExpenseSchema>)
     revalidatePath("/owner/transactions")
     revalidatePath("/owner/cashflow")
 
+    await invalidateDashboardCache()
+    await invalidateExpenseCache()
+
     return {
       id: expense.id,
       date: expense.date,
@@ -117,6 +121,9 @@ export async function updateExpense(params: z.infer<typeof updateExpenseSchema>)
 
     revalidatePath("/owner/transactions")
 
+    await invalidateDashboardCache()
+    await invalidateExpenseCache()
+
     return {
       id: expense.id,
       date: expense.date,
@@ -144,6 +151,9 @@ export async function deleteExpense(id: string) {
     })
 
     revalidatePath("/owner/transactions")
+
+    await invalidateDashboardCache()
+    await invalidateExpenseCache()
 
     return { success: true }
   } catch (error) {

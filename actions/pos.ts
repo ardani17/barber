@@ -5,6 +5,7 @@ import Decimal from "decimal.js"
 import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { createDefaultAccountIfNeeded } from "./cashflow"
+import { invalidateDashboardCache, invalidateTransactionCache } from "@/lib/redis"
 
 export async function checkoutTransaction(data: {
   items: Array<{
@@ -124,6 +125,9 @@ export async function checkoutTransaction(data: {
     revalidatePath("/dashboard")
     revalidatePath("/transactions")
     revalidatePath("/owner/cashflow")
+
+    await invalidateDashboardCache()
+    await invalidateTransactionCache()
 
     return { success: true, transactionId: transaction.id }
   } catch (error) {

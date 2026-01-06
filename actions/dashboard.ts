@@ -4,8 +4,8 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
-import { unstable_cache } from "next/cache"
 import { getExpenses, getExpensesByCategory } from "./expenses"
+import { getCache, setCache } from "@/lib/redis"
 
 const getDashboardStatsSchema = z.object({
   startDate: z.date().optional(),
@@ -142,38 +142,38 @@ export async function getDashboardData(params: {
     throw new Error("Unauthorized")
   }
 
-  const cacheKey = `${params.startDate.getTime()}-${params.endDate.getTime()}`
+  const cacheKey = `dashboard:${params.startDate.getTime()}-${params.endDate.getTime()}`
 
-  return unstable_cache(
-    async () => {
-      const [stats, dailyRevenue, barberRevenue, expenses, topServices, topProducts, paymentMethods, expensesByCategory] = await Promise.all([
-        getDashboardStats(params),
-        getDailyRevenue(params.startDate, params.endDate),
-        getRevenueByBarber(params.startDate, params.endDate),
-        getExpenses(params),
-        getTopServices(params.startDate, params.endDate, 10),
-        getTopProducts(params.startDate, params.endDate, 10),
-        getRevenueByPaymentMethod(params.startDate, params.endDate),
-        getExpensesByCategory(params.startDate, params.endDate)
-      ])
+  const cached = await getCache<DashboardData>(cacheKey)
+  if (cached) {
+    return cached
+  }
 
-      return {
-        stats,
-        dailyRevenue,
-        barberRevenue,
-        expenses,
-        topServices,
-        topProducts,
-        paymentMethods,
-        expensesByCategory
-      }
-    },
-    [`dashboard-${cacheKey}`],
-    {
-      revalidate: 300,
-      tags: ['dashboard', `dashboard-${cacheKey}`]
-    }
-  )()
+  const [stats, dailyRevenue, barberRevenue, expenses, topServices, topProducts, paymentMethods, expensesByCategory] = await Promise.all([
+    getDashboardStats(params),
+    getDailyRevenue(params.startDate, params.endDate),
+    getRevenueByBarber(params.startDate, params.endDate),
+    getExpenses(params),
+    getTopServices(params.startDate, params.endDate, 10),
+    getTopProducts(params.startDate, params.endDate, 10),
+    getRevenueByPaymentMethod(params.startDate, params.endDate),
+    getExpensesByCategory(params.startDate, params.endDate)
+  ])
+
+  const data = {
+    stats,
+    dailyRevenue,
+    barberRevenue,
+    expenses,
+    topServices,
+    topProducts,
+    paymentMethods,
+    expensesByCategory
+  }
+
+  await setCache(cacheKey, data, 300)
+
+  return data
 }
 
 export async function getRevenueByBarber(startDate: Date, endDate: Date) {
