@@ -1,12 +1,11 @@
 import { DashboardFilters } from "./dashboard-filters"
-import { MetricCard } from "@/components/owner/metric-card"
+import { DashboardMetrics } from "./dashboard-metrics"
 import { ChartContainer } from "@/components/owner/chart-container"
 import { CashflowChart } from "@/components/owner/charts/cashflow-chart"
 import { CommissionChart } from "@/components/owner/charts/commission-chart"
 import { RevenueBreakdown } from "@/components/owner/revenue-breakdown"
 import { ExpensesBreakdown } from "@/components/owner/expenses-breakdown"
 import { getDashboardData } from "@/actions/dashboard"
-import { ArrowUp, ArrowDown, DollarSign, Wallet, TrendingUp, TrendingDown } from "lucide-react"
 import Decimal from "decimal.js"
 import { Suspense } from "react"
 import type { DateRangeType } from "@/types"
@@ -125,39 +124,12 @@ async function DashboardContent({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Laba Kotor"
-          value={processedData.metrics.grossProfit}
-          icon={DollarSign}
-          iconColor="text-yellow-500"
-          trend={{
-            value: processedData.metrics.revenueGrowth,
-            positive: parseFloat(processedData.metrics.revenueGrowth) >= 0
-          }}
-        />
-
-        <MetricCard
-          title="Total Pengeluaran"
-          value={processedData.metrics.totalExpenses}
-          icon={Wallet}
-          iconColor="text-red-500"
-          footer="Dari periode ini"
-        />
-
-        <MetricCard
-          title="Total Komisi Barber"
-          value={processedData.metrics.totalCommissions}
-          icon={TrendingUp}
-          iconColor="text-yellow-500"
-          footer="Dari periode ini"
-        />
-
-        <MetricCard
-          title="Laba Bersih"
-          value={processedData.metrics.netProfit}
-          icon={TrendingDown}
-          iconColor="text-green-500"
-          footer={parseFloat(processedData.metrics.netProfit) >= 0 ? "Profit" : "Rugi"}
+        <DashboardMetrics
+          grossProfit={processedData.metrics.grossProfit}
+          totalExpenses={processedData.metrics.totalExpenses}
+          totalCommissions={processedData.metrics.totalCommissions}
+          netProfit={processedData.metrics.netProfit}
+          revenueGrowth={parseFloat(processedData.metrics.revenueGrowth)}
         />
       </div>
 
