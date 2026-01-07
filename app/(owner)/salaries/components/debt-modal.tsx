@@ -45,7 +45,9 @@ export function DebtModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting debt:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error submitting debt:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

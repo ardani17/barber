@@ -690,12 +690,15 @@ export async function getPeriodSalaryDetail(barberId: string, periodStart: Date,
       throw new Error("Barber tidak ditemukan")
     }
 
+    const endOfDay = new Date(periodEnd)
+    endOfDay.setHours(23, 59, 59, 999)
+
     const transactions = await prisma.transaction.findMany({
       where: {
         barberId,
         date: {
           gte: periodStart,
-          lte: periodEnd
+          lte: endOfDay
         }
       }
     })
@@ -735,12 +738,15 @@ export async function getPeriodSalaryDetail(barberId: string, periodStart: Date,
       barberId,
       barberName: barber.name,
       compensationType: barber.compensationType,
-      baseSalary: baseSalary.toString(),
-      commissionAmount: totalCommission.toString(),
+      baseSalary: baseSalary.toNumber(),
+      commission: totalCommission.toNumber(),
       transactionCount,
-      bonusAmount: totalBonus.toString(),
-      deductionAmount: totalDeduction.toString(),
-      totalShouldPay: totalShouldPay.toString()
+      bonus: totalBonus.toNumber(),
+      deduction: totalDeduction.toNumber(),
+      netSalary: totalShouldPay.toNumber(),
+      totalIncome: totalShouldPay.toNumber(),
+      startDate: periodStart,
+      endDate: periodEnd
     }
   } catch (error) {
     throw new Error("Gagal mengambil rincian gaji periode")

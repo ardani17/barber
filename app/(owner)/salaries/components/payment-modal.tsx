@@ -61,7 +61,9 @@ export function PaymentModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting payment:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error submitting payment:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

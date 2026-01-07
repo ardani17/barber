@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Plus, DollarSign, Wallet, TrendingUp, Calendar, Edit, Trash2, Power, PowerOff } from 'lucide-react'
+import { Toast } from '@/components/ui/toast'
+import { Plus, DollarSign, Wallet, TrendingUp, Calendar, Edit, Trash2, Power, PowerOff, XCircle, CheckCircle } from 'lucide-react'
 import { getSalaryPayments, getSalaryDebts, getSalaryAdjustments, paySalary, getCashAccounts, getPeriodSalaryDetail, createSalaryPeriod, updateSalaryPeriod, deleteSalaryPeriod, deactivateSalaryPeriod, activateSalaryPeriod } from '@/actions/salary-payments'
 import type { SalaryPeriod, SalaryPayment, SalaryDebt, SalaryAdjustment, Barber } from './types/types'
 import { ZodError } from 'zod'
@@ -103,6 +104,9 @@ export default function SalariesClient({
   const [selectedPaymentBarber, setSelectedPaymentBarber] = useState<{ id: string; name: string } | undefined>(undefined)
   const [periodSalaryDetail, setPeriodSalaryDetail] = useState<any>(undefined)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [toast, setToast] = useState<{ open: boolean; title?: string; description?: string; variant?: 'default' | 'destructive' }>({
+    open: false
+  })
 
   const loadData = async () => {
     try {
@@ -146,15 +150,38 @@ export default function SalariesClient({
       setEditingPeriodId(undefined)
       setFormData({ barberId: '', name: '', startDate: '', endDate: '' })
       loadData()
+      setToast({
+        open: true,
+        title: 'Berhasil',
+        description: editMode ? 'Periode gaji berhasil diperbarui' : 'Periode gaji berhasil dibuat',
+        variant: 'default'
+      })
     } catch (error) {
-      console.error('Error saving period:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error saving period:', error)
+      }
       if (error instanceof ZodError) {
-        const errorMessages = error.issues.map(err => err.message).join('\n')
-        alert(errorMessages)
+        const errorMessages = error.issues.map(err => err.message).join(', ')
+        setToast({
+          open: true,
+          title: 'Validasi Gagal',
+          description: errorMessages,
+          variant: 'destructive'
+        })
       } else if (error instanceof Error) {
-        alert(error.message)
+        setToast({
+          open: true,
+          title: 'Gagal',
+          description: error.message,
+          variant: 'destructive'
+        })
       } else {
-        alert('Gagal menyimpan periode gaji')
+        setToast({
+          open: true,
+          title: 'Gagal',
+          description: 'Gagal menyimpan periode gaji',
+          variant: 'destructive'
+        })
       }
     } finally {
       setSubmitting(false)
@@ -186,9 +213,22 @@ export default function SalariesClient({
       setDeleteConfirmOpen(false)
       setPeriodToDelete(undefined)
       loadData()
+      setToast({
+        open: true,
+        title: 'Berhasil',
+        description: 'Periode gaji berhasil dihapus',
+        variant: 'default'
+      })
     } catch (error) {
-      console.error('Error deleting period:', error)
-      alert(error instanceof Error ? error.message : 'Gagal menghapus periode gaji')
+      if (!(error instanceof ZodError)) {
+        console.error('Error deleting period:', error)
+      }
+      setToast({
+        open: true,
+        title: 'Gagal',
+        description: error instanceof Error ? error.message : 'Gagal menghapus periode gaji',
+        variant: 'destructive'
+      })
     }
   }
 
@@ -205,9 +245,22 @@ export default function SalariesClient({
         await activateSalaryPeriod(period.id, period.barberId)
       }
       loadData()
+      setToast({
+        open: true,
+        title: 'Berhasil',
+        description: period.isActive ? 'Periode gaji berhasil dinonaktifkan' : 'Periode gaji berhasil diaktifkan',
+        variant: 'default'
+      })
     } catch (error) {
-      console.error('Error toggling active period:', error)
-      alert(error instanceof Error ? error.message : 'Gagal mengubah status periode gaji')
+      if (!(error instanceof ZodError)) {
+        console.error('Error toggling active period:', error)
+      }
+      setToast({
+        open: true,
+        title: 'Gagal',
+        description: error instanceof Error ? error.message : 'Gagal mengubah status periode gaji',
+        variant: 'destructive'
+      })
     }
   }
 
@@ -240,8 +293,15 @@ export default function SalariesClient({
       setPeriodSalaryDetail(detail)
       setPaymentModalOpen(true)
     } catch (error) {
-      console.error('Error loading salary detail:', error)
-      alert(error instanceof Error ? error.message : 'Gagal mengambil rincian gaji')
+      if (!(error instanceof ZodError)) {
+        console.error('Error loading salary detail:', error)
+      }
+      setToast({
+        open: true,
+        title: 'Gagal',
+        description: error instanceof Error ? error.message : 'Gagal mengambil rincian gaji',
+        variant: 'destructive'
+      })
     } finally {
       setLoadingDetail(false)
     }
@@ -254,22 +314,42 @@ export default function SalariesClient({
     const totalPayment = tunaiAmount + bankAmount + qrisAmount
 
     if (totalPayment <= 0) {
-      alert('Total pembayaran harus lebih dari 0')
+      setToast({
+        open: true,
+        title: 'Validasi Gagal',
+        description: 'Total pembayaran harus lebih dari 0',
+        variant: 'destructive'
+      })
       return
     }
 
     if (tunaiAmount > 0 && !paymentFormData.tunaiAccountId) {
-      alert('Pilih akun tunai untuk pembayaran tunai')
+      setToast({
+        open: true,
+        title: 'Validasi Gagal',
+        description: 'Pilih akun tunai untuk pembayaran tunai',
+        variant: 'destructive'
+      })
       return
     }
 
     if (bankAmount > 0 && !paymentFormData.bankAccountId) {
-      alert('Pilih akun bank untuk pembayaran bank')
+      setToast({
+        open: true,
+        title: 'Validasi Gagal',
+        description: 'Pilih akun bank untuk pembayaran bank',
+        variant: 'destructive'
+      })
       return
     }
 
     if (qrisAmount > 0 && !paymentFormData.qrisAccountId) {
-      alert('Pilih akun QRIS untuk pembayaran QRIS')
+      setToast({
+        open: true,
+        title: 'Validasi Gagal',
+        description: 'Pilih akun QRIS untuk pembayaran QRIS',
+        variant: 'destructive'
+      })
       return
     }
 
@@ -292,9 +372,22 @@ export default function SalariesClient({
       setPaymentModalOpen(false)
       setSelectedPaymentBarber(undefined)
       loadData()
+      setToast({
+        open: true,
+        title: 'Berhasil',
+        description: 'Pembayaran gaji berhasil dilakukan',
+        variant: 'default'
+      })
     } catch (error) {
-      console.error('Error paying salary:', error)
-      alert(error instanceof Error ? error.message : 'Gagal membayar gaji')
+      if (!(error instanceof ZodError)) {
+        console.error('Error paying salary:', error)
+      }
+      setToast({
+        open: true,
+        title: 'Gagal',
+        description: error instanceof Error ? error.message : 'Gagal membayar gaji',
+        variant: 'destructive'
+      })
     } finally {
       setPaying(false)
     }
@@ -787,6 +880,14 @@ export default function SalariesClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Toast
+        open={toast.open}
+        onOpenChange={(open) => setToast({ ...toast, open })}
+        title={toast.title}
+        description={toast.description}
+        variant={toast.variant}
+      />
     </div>
   )
 }

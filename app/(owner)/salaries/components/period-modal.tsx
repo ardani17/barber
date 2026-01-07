@@ -52,7 +52,9 @@ export function PeriodModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting period:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error submitting period:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

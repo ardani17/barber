@@ -57,7 +57,9 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error paying salary:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error paying salary:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -74,7 +76,9 @@ export function BarberDetailModal({
       await addSalaryDebt(data)
       onDataRefresh()
     } catch (error) {
-      console.error('Error adding debt:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error adding debt:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -98,7 +102,9 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error adding adjustment:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error adding adjustment:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -120,7 +126,9 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error creating period:', error)
+      if (!(error instanceof ZodError)) {
+        console.error('Error creating period:', error)
+      }
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
