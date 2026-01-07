@@ -20,35 +20,35 @@ export const dynamic = "force-dynamic"
 function getDateRange(searchParams: { range?: string; start?: string; end?: string }) {
   const range = (searchParams.range as DateRangeType) || "month"
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
   
   let startDate: Date
   let endDate: Date
   
-  if (range === "week") {
-    startDate = new Date(today)
-    startDate.setDate(startDate.getDate() - startDate.getDay())
-    endDate = new Date(today)
-    endDate.setDate(endDate.getDate() - endDate.getDay() + 6)
+  if (range === "today") {
+    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0)
+    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+  } else if (range === "week") {
+    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6, 0, 0, 0)
+    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
   } else if (range === "month") {
-    startDate = new Date(today.getFullYear(), today.getMonth(), 1)
-    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29, 0, 0, 0)
+    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
   } else if (range === "quarter") {
     const quarter = Math.floor(today.getMonth() / 3)
-    startDate = new Date(today.getFullYear(), quarter * 3, 1)
-    endDate = new Date(today.getFullYear(), quarter * 3 + 3, 0)
+    startDate = new Date(today.getFullYear(), quarter * 3, 1, 0, 0, 0)
+    endDate = new Date(today.getFullYear(), quarter * 3 + 3, 0, 23, 59, 59, 999)
   } else if (range === "year") {
-    startDate = new Date(today.getFullYear(), 0, 1)
-    endDate = new Date(today.getFullYear(), 11, 31)
+    startDate = new Date(today.getFullYear(), 0, 1, 0, 0, 0)
+    endDate = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999)
   } else if (range === "custom" && searchParams.start && searchParams.end) {
     startDate = new Date(searchParams.start)
+    startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0)
     endDate = new Date(searchParams.end)
+    endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
   } else {
-    startDate = new Date(today.getFullYear(), today.getMonth(), 1)
-    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29, 0, 0, 0)
+    endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
   }
-  
-  endDate.setHours(23, 59, 59, 999)
   
   return { startDate, endDate }
 }
@@ -169,11 +169,12 @@ async function DashboardContent({
 export default async function DashboardPage({
   searchParams
 }: {
-  searchParams: { range?: string; start?: string; end?: string }
+  searchParams: Promise<{ range?: string; start?: string; end?: string }>
 }) {
+  const params = await searchParams
   return (
     <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent searchParams={searchParams} />
+      <DashboardContent searchParams={params} />
     </Suspense>
   )
 }

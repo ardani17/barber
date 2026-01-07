@@ -11,7 +11,9 @@ const getTransactionsSchema = z.object({
   barberId: z.string().optional(),
   cashierId: z.string().optional(),
   paymentMethod: z.enum(["TUNAI", "QRIS"]).optional(),
-  search: z.string().optional()
+  search: z.string().optional(),
+  page: z.number().optional(),
+  pageSize: z.number().optional()
 })
 
 export async function getTransactions(params: z.infer<typeof getTransactionsSchema>) {
@@ -21,7 +23,7 @@ export async function getTransactions(params: z.infer<typeof getTransactionsSche
     throw new Error("Unauthorized")
   }
 
-  const { startDate, endDate, barberId, cashierId, paymentMethod, search } = getTransactionsSchema.parse(params)
+  const { startDate, endDate, barberId, cashierId, paymentMethod, search, page = 1, pageSize = 5 } = getTransactionsSchema.parse(params)
 
   const where: any = {
     date: {
@@ -51,42 +53,61 @@ export async function getTransactions(params: z.infer<typeof getTransactionsSche
     ]
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    include: {
-      barber: true,
-      cashier: true,
-      items: {
-        include: {
-          service: true,
-          product: true
-        }
-      }
-    },
-    orderBy: {
-      date: "desc"
-    }
-  })
+  const skip = (page - 1) * pageSize
 
-  return transactions.map(transaction => ({
-    id: transaction.id,
-    transactionNumber: transaction.transactionNumber,
-    date: transaction.date,
-    totalAmount: transaction.totalAmount.toString(),
-    totalCommission: transaction.totalCommission.toString(),
-    paymentMethod: transaction.paymentMethod,
-    barberName: transaction.barber.name,
-    barberId: transaction.barberId,
-    cashierName: transaction.cashier.username,
-    cashierId: transaction.cashierId,
-    items: transaction.items.map(item => ({
-      type: item.type,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice.toString(),
-      subtotal: item.subtotal.toString(),
-      name: item.service?.name || item.product?.name || "Unknown"
-    }))
-  }))
+  const [transactions, totalCount] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      include: {
+        barber: true,
+        cashier: true,
+        items: {
+          include: {
+            service: true,
+            product: true
+          }
+        }
+      },
+      orderBy: {
+        date: "desc"
+      },
+      skip,
+      take: pageSize
+    }),
+    prisma.transaction.count({ where })
+  ])
+
+  const totalPages = Math.ceil(totalCount / pageSize)
+
+  return {
+    transactions: transactions.map(transaction => ({
+      id: transaction.id,
+      transactionNumber: transaction.transactionNumber,
+      date: transaction.date,
+      totalAmount: transaction.totalAmount.toString(),
+      totalCommission: transaction.totalCommission.toString(),
+      paymentMethod: transaction.paymentMethod,
+      barberName: transaction.barber.name,
+      barberId: transaction.barberId,
+      cashierName: transaction.cashier.username,
+      cashierId: transaction.cashierId,
+      items: transaction.items.map(item => ({
+        type: item.type,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(),
+        subtotal: item.subtotal.toString(),
+        name: item.service?.name || item.product?.name || "Unknown"
+      }))
+    })),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    }
+  }
 }
 
 export async function getTransactionById(id: string) {

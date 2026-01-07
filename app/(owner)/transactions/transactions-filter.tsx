@@ -48,6 +48,7 @@ export default function TransactionsFilter({
   const handleFilterChange = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search)
     params.set(key, value)
+    params.delete("page")
     window.history.pushState({}, "", `?${params.toString()}`)
   }
 
@@ -58,6 +59,7 @@ export default function TransactionsFilter({
     } else {
       params.delete("search")
     }
+    params.delete("page")
     window.history.pushState({}, "", `?${params.toString()}`)
   }
 

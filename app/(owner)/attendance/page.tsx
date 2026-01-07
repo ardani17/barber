@@ -13,11 +13,12 @@ export const dynamic = 'force-dynamic'
 async function AttendanceContent({
   searchParams
 }: {
-  searchParams: { date?: string; barber?: string; status?: string }
+  searchParams: Promise<{ date?: string; barber?: string; status?: string }>
 }) {
-  const initialDate = searchParams.date || new Date().toISOString().split('T')[0]
-  const initialBarber = searchParams.barber || 'all'
-  const initialStatus = searchParams.status || 'all'
+  const params = await searchParams
+  const initialDate = params.date || new Date().toISOString().split('T')[0]
+  const initialBarber = params.barber || 'all'
+  const initialStatus = params.status || 'all'
 
   const [initialAttendances, initialBarbers] = await Promise.all([
     getAttendances(initialBarber !== 'all' ? initialBarber : undefined, initialDate),
@@ -64,10 +65,10 @@ function AttendanceSkeleton() {
   )
 }
 
-export default function AttendancePage({
+export default async function AttendancePage({
   searchParams
 }: {
-  searchParams: { date?: string; barber?: string; status?: string }
+  searchParams: Promise<{ date?: string; barber?: string; status?: string }>
 }) {
   return (
     <Suspense fallback={<AttendanceSkeleton />}>

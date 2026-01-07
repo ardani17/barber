@@ -25,13 +25,19 @@ export function DashboardFilters() {
     params.set("range", "custom")
     
     if (start) {
-      params.set("start", start.toISOString())
+      const year = start.getFullYear()
+      const month = String(start.getMonth() + 1).padStart(2, '0')
+      const day = String(start.getDate()).padStart(2, '0')
+      params.set("start", `${year}-${month}-${day}`)
     } else {
       params.delete("start")
     }
     
     if (end) {
-      params.set("end", end.toISOString())
+      const year = end.getFullYear()
+      const month = String(end.getMonth() + 1).padStart(2, '0')
+      const day = String(end.getDate()).padStart(2, '0')
+      params.set("end", `${year}-${month}-${day}`)
     } else {
       params.delete("end")
     }

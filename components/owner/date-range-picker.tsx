@@ -6,6 +6,13 @@ import { Label } from "@/components/ui/label"
 import { Calendar } from "lucide-react"
 import type { DateRangeType } from "@/types"
 
+function formatDateToLocal(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 interface DateRangePickerProps {
   selectedRange: DateRangeType
   onRangeChange: (range: DateRangeType) => void
@@ -32,7 +39,8 @@ export function DateRangePicker({
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
       const [year, month, day] = e.target.value.split("-").map(Number)
-      onCustomStartDateChange?.(new Date(year, month - 1, day, 0, 0, 0))
+      const date = new Date(year, month - 1, day)
+      onCustomStartDateChange?.(date)
     } else {
       onCustomStartDateChange?.(undefined)
     }
@@ -41,7 +49,8 @@ export function DateRangePicker({
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
       const [year, month, day] = e.target.value.split("-").map(Number)
-      onCustomEndDateChange?.(new Date(year, month - 1, day, 23, 59, 59))
+      const date = new Date(year, month - 1, day)
+      onCustomEndDateChange?.(date)
     } else {
       onCustomEndDateChange?.(undefined)
     }
@@ -108,7 +117,7 @@ export function DateRangePicker({
               <Label className="text-xs">Mulai</Label>
               <Input
                 type="date"
-                value={customStartDate ? customStartDate.toISOString().split('T')[0] : ''}
+                value={customStartDate ? formatDateToLocal(customStartDate) : ''}
                 onChange={handleStartDateChange}
                 className="border-0 text-xs sm:text-sm text-black dark:text-white focus:ring-0 bg-transparent h-8"
               />
@@ -118,7 +127,7 @@ export function DateRangePicker({
               <Label className="text-xs">Akhir</Label>
               <Input
                 type="date"
-                value={customEndDate ? customEndDate.toISOString().split('T')[0] : ''}
+                value={customEndDate ? formatDateToLocal(customEndDate) : ''}
                 onChange={handleEndDateChange}
                 className="border-0 text-xs sm:text-sm text-black dark:text-white focus:ring-0 bg-transparent h-8"
               />

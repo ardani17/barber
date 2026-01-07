@@ -690,7 +690,7 @@ export default function SalariesClient({
                     className="h-8 sm:h-10 px-2 sm:px-3 rounded-md border border-input bg-background text-[10px] sm:text-sm w-32 sm:w-40"
                   >
                     <option value="">Pilih akun</option>
-                    {cashAccounts.filter(a => a.type === 'CASH').map((account) => (
+                    {cashAccounts.filter(a => a.type === 'TUNAI').map((account) => (
                       <option key={account.id} value={account.id}>{account.name}</option>
                     ))}
                   </select>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,7 @@ import {
 import { Download, Eye } from "lucide-react"
 import { formatCurrency } from "@/lib/decimal"
 import TransactionDetailModal from "./transaction-detail-modal"
+import Pagination from "@/components/ui/pagination"
 
 interface Transaction {
   id: string
@@ -54,6 +55,10 @@ interface TransactionsTableProps {
   selectedCashier: string
   selectedPaymentMethod: string
   searchQuery: string
+  currentPage: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
 }
 
 export default function TransactionsTable({
@@ -63,7 +68,11 @@ export default function TransactionsTable({
   selectedBarber,
   selectedCashier,
   selectedPaymentMethod,
-  searchQuery
+  searchQuery,
+  currentPage,
+  totalPages,
+  hasNextPage,
+  hasPreviousPage
 }: TransactionsTableProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -92,6 +101,16 @@ export default function TransactionsTable({
   const totalQRIS = filteredTransactions
     .filter(t => t.paymentMethod === "QRIS")
     .reduce((sum, t) => sum + parseFloat(t.totalAmount), 0)
+
+  const handlePageChange = (page: number) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set("page", page.toString())
+    window.location.href = url.toString()
+  }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [currentPage])
 
   return (
     <>
@@ -189,6 +208,18 @@ export default function TransactionsTable({
               </Table>
             </div>
           </div>
+          
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                hasNextPage={hasNextPage}
+                hasPreviousPage={hasPreviousPage}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -12,9 +12,8 @@ interface RevenueBreakdownProps {
 
 export function RevenueBreakdown({ topServices, topProducts, paymentMethods, loading }: RevenueBreakdownProps) {
   const paymentMethodLabels: Record<string, string> = {
-    CASH: "Tunai",
-    TRANSFER: "Transfer Bank",
-    E_WALLET: "E-Wallet"
+    TUNAI: "Tunai",
+    QRIS: "QRIS"
   }
 
   if (loading) {

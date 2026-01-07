@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,7 +84,7 @@ interface CashAccount {
 }
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     range?: string
     startDate?: string
     endDate?: string
@@ -93,17 +94,39 @@ interface PageProps {
     search?: string
     category?: string
     expenseSearch?: string
-  }
+    page?: string
+  }>
 }
 
 async function getDateRange(range: string, startDate?: string, endDate?: string) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-  if (range === "custom" && startDate && endDate) {
+  if (range === "all") {
+    const firstTransaction = await prisma.transaction.findFirst({
+      orderBy: { date: "asc" },
+      select: { date: true }
+    })
+    
+    if (firstTransaction) {
+      return {
+        startDate: new Date(firstTransaction.date.getFullYear(), firstTransaction.date.getMonth(), firstTransaction.date.getDate(), 0, 0, 0),
+        endDate: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+      }
+    }
+    
     return {
-      startDate: new Date(startDate),
-      endDate: new Date(endDate)
+      startDate: new Date(now.getFullYear(), now.getMonth() - 12, 1),
+      endDate: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+    }
+  }
+
+  if (range === "custom" && startDate && endDate) {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    return {
+      startDate: new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0),
+      endDate: new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59)
     }
   }
 
@@ -144,20 +167,22 @@ async function getDateRange(range: string, startDate?: string, endDate?: string)
 }
 
 async function TransactionsPage({ searchParams }: PageProps) {
-  const range = searchParams.range || "today"
+  const params = await searchParams
+  const range = params.range || "all"
   const { startDate, endDate } = await getDateRange(
     range,
-    searchParams.startDate,
-    searchParams.endDate
+    params.startDate,
+    params.endDate
   )
 
-  const barberId = searchParams.barber === "all" ? undefined : searchParams.barber
-  const cashierId = searchParams.cashier === "all" ? undefined : searchParams.cashier
-  const paymentMethod = searchParams.paymentMethod === "all" ? undefined : searchParams.paymentMethod as "TUNAI" | "QRIS"
-  const search = searchParams.search || undefined
+  const barberId = params.barber === "all" ? undefined : params.barber
+  const cashierId = params.cashier === "all" ? undefined : params.cashier
+  const paymentMethod = params.paymentMethod === "all" ? undefined : params.paymentMethod as "TUNAI" | "QRIS"
+  const search = params.search || undefined
+  const page = params.page ? parseInt(params.page) : 1
 
-  const category = searchParams.category === "all" ? undefined : searchParams.category
-  const expenseSearch = searchParams.expenseSearch || undefined
+  const category = params.category === "all" ? undefined : params.category
+  const expenseSearch = params.expenseSearch || undefined
 
   const [transactions, barbers, cashiers, expenses, cashAccounts] = await Promise.all([
     getTransactions({
@@ -166,7 +191,8 @@ async function TransactionsPage({ searchParams }: PageProps) {
       barberId,
       cashierId,
       paymentMethod,
-      search
+      search,
+      page
     }),
     getBarbers(),
     getCashiers(),
@@ -218,39 +244,43 @@ async function TransactionsPage({ searchParams }: PageProps) {
               range={range}
               barbers={barbers}
               cashiers={cashiers}
-              selectedBarber={searchParams.barber || "all"}
-              selectedCashier={searchParams.cashier || "all"}
-              selectedPaymentMethod={searchParams.paymentMethod || "all"}
-              searchQuery={searchParams.search || ""}
-              startDate={searchParams.startDate}
-              endDate={searchParams.endDate}
+              selectedBarber={params.barber || "all"}
+              selectedCashier={params.cashier || "all"}
+              selectedPaymentMethod={params.paymentMethod || "all"}
+              searchQuery={params.search || ""}
+              startDate={params.startDate}
+              endDate={params.endDate}
             />
 
             <TransactionsTable
-              transactions={transactions}
+              transactions={transactions.transactions}
               barbers={barbers}
               cashiers={cashiers}
-              selectedBarber={searchParams.barber || "all"}
-              selectedCashier={searchParams.cashier || "all"}
-              selectedPaymentMethod={searchParams.paymentMethod || "all"}
-              searchQuery={searchParams.search || ""}
+              selectedBarber={params.barber || "all"}
+              selectedCashier={params.cashier || "all"}
+              selectedPaymentMethod={params.paymentMethod || "all"}
+              searchQuery={params.search || ""}
+              currentPage={page}
+              totalPages={transactions.pagination.totalPages}
+              hasNextPage={transactions.pagination.hasNextPage}
+              hasPreviousPage={transactions.pagination.hasPreviousPage}
             />
           </TabsContent>
 
           <TabsContent value="expenses" className="mt-4 sm:mt-6" suppressHydrationWarning>
             <ExpensesFilter
               range={range}
-              selectedCategory={searchParams.category || "all"}
-              searchQuery={searchParams.expenseSearch || ""}
-              startDate={searchParams.startDate}
-              endDate={searchParams.endDate}
+              selectedCategory={params.category || "all"}
+              searchQuery={params.expenseSearch || ""}
+              startDate={params.startDate}
+              endDate={params.endDate}
             />
 
             <ExpensesTable
               expenses={transformedExpenses}
               cashAccounts={transformedCashAccounts}
-              selectedCategory={searchParams.category || "all"}
-              searchQuery={searchParams.expenseSearch || ""}
+              selectedCategory={params.category || "all"}
+              searchQuery={params.expenseSearch || ""}
             />
           </TabsContent>
         </Tabs>
