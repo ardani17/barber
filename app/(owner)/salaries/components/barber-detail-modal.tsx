@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Barber, SalaryPayment, SalaryDebt, SalaryAdjustment, SalaryPeriod } from '../types/types'
-import { Modal } from './ui/modal'
-import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { PaymentList } from './payment-list'
 import { DebtList } from './debt-list'
 import { AdjustmentList } from './adjustment-list'
@@ -142,74 +142,79 @@ export function BarberDetailModal({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title={`Detail: ${barber.name}`}>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Status: {barber.isActive ? 'Aktif' : 'Tidak Aktif'}</p>
-              <p className="text-sm text-gray-600">
-                Komisi: {barber.commissionRate}% | Gaji Pokok: {barber.baseSalary ? `Rp ${barber.baseSalary.toLocaleString('id-ID')}` : '-'}
-              </p>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detail: {barber.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Status: {barber.isActive ? 'Aktif' : 'Tidak Aktif'}</p>
+                <p className="text-sm text-gray-600">
+                  Komisi: {barber.commissionRate}% | Gaji Pokok: {barber.baseSalary ? `Rp ${barber.baseSalary.toLocaleString('id-ID')}` : '-'}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-b border-gray-200">
+              <nav className="flex gap-2 flex-wrap">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
+                      activeTab === tab.id
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label} ({tab.count})
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              {activeTab === 'payments' && (
+                <Button size="sm" onClick={() => setPaymentModalOpen(true)}>
+                  + Tambah Pembayaran
+                </Button>
+              )}
+              {activeTab === 'debts' && (
+                <Button size="sm" onClick={() => setDebtModalOpen(true)}>
+                  + Tambah Hutang
+                </Button>
+              )}
+              {activeTab === 'adjustments' && (
+                <Button size="sm" onClick={() => setAdjustmentModalOpen(true)}>
+                  + Tambah Penyesuaian
+                </Button>
+              )}
+              {activeTab === 'periods' && (
+                <Button size="sm" onClick={() => setPeriodModalOpen(true)}>
+                  + Tambah Periode
+                </Button>
+              )}
+            </div>
+
+            <div className="max-h-[400px] overflow-y-auto">
+              {activeTab === 'payments' && (
+                <PaymentList payments={payments} barberName={barber.name} />
+              )}
+              {activeTab === 'debts' && (
+                <DebtList debts={debts} barberName={barber.name} />
+              )}
+              {activeTab === 'adjustments' && (
+                <AdjustmentList adjustments={adjustments} barberName={barber.name} />
+              )}
+              {activeTab === 'periods' && (
+                <PeriodList periods={periods} barberName={barber.name} />
+              )}
             </div>
           </div>
-
-          <div className="border-b border-gray-200">
-            <nav className="flex gap-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  {tab.label} ({tab.count})
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            {activeTab === 'payments' && (
-              <Button size="sm" onClick={() => setPaymentModalOpen(true)}>
-                + Tambah Pembayaran
-              </Button>
-            )}
-            {activeTab === 'debts' && (
-              <Button size="sm" onClick={() => setDebtModalOpen(true)}>
-                + Tambah Hutang
-              </Button>
-            )}
-            {activeTab === 'adjustments' && (
-              <Button size="sm" onClick={() => setAdjustmentModalOpen(true)}>
-                + Tambah Penyesuaian
-              </Button>
-            )}
-            {activeTab === 'periods' && (
-              <Button size="sm" onClick={() => setPeriodModalOpen(true)}>
-                + Tambah Periode
-              </Button>
-            )}
-          </div>
-
-          <div className="max-h-[400px] overflow-y-auto">
-            {activeTab === 'payments' && (
-              <PaymentList payments={payments} barberName={barber.name} />
-            )}
-            {activeTab === 'debts' && (
-              <DebtList debts={debts} barberName={barber.name} />
-            )}
-            {activeTab === 'adjustments' && (
-              <AdjustmentList adjustments={adjustments} barberName={barber.name} />
-            )}
-            {activeTab === 'periods' && (
-              <PeriodList periods={periods} barberName={barber.name} />
-            )}
-          </div>
-        </div>
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
       <PaymentModal
         isOpen={paymentModalOpen}

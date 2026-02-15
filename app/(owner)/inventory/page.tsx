@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,9 +13,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, Edit, Package, Scissors, AlertTriangle } from "lucide-react"
 import { formatCurrency } from "@/lib/decimal"
-import { ServiceModal } from "@/components/service-modal"
-import { ProductModal } from "@/components/product-modal"
-import { StockAdjustmentModal } from "@/components/stock-adjustment-modal"
+
+const ServiceModal = dynamic(
+  () => import("@/components/service-modal").then((mod) => mod.ServiceModal),
+  { ssr: false }
+)
+
+const ProductModal = dynamic(
+  () => import("@/components/product-modal").then((mod) => mod.ProductModal),
+  { ssr: false }
+)
+
+const StockAdjustmentModal = dynamic(
+  () => import("@/components/stock-adjustment-modal").then((mod) => mod.StockAdjustmentModal),
+  { ssr: false }
+)
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState("services")
@@ -156,21 +169,21 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <Card className="border-yellow-500 dark:border-gray-700 shadow-lg w-full overflow-hidden">
+      <Card className="border-amber-500 dark:border-gray-700 shadow-lg w-full overflow-hidden">
         <CardContent className="p-2 sm:p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
-              <TabsList className="bg-muted border border-yellow-500 dark:border-gray-700 w-full sm:w-auto h-10 sm:h-auto">
+              <TabsList className="bg-muted border border-amber-500 dark:border-gray-700 w-full sm:w-auto h-10 sm:h-auto">
                 <TabsTrigger 
                   value="services" 
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black text-xs sm:text-sm flex-1 sm:flex-none"
+                  className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-xs sm:text-sm flex-1 sm:flex-none"
                 >
                   <Scissors className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span>Layanan</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="products" 
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black text-xs sm:text-sm flex-1 sm:flex-none"
+                  className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-xs sm:text-sm flex-1 sm:flex-none"
                 >
                   <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span>Produk</span>
@@ -184,7 +197,7 @@ export default function InventoryPage() {
                     placeholder="Cari..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 border-yellow-500 dark:border-gray-700 focus:border-yellow-600 text-xs sm:text-sm h-10"
+                    className="pl-10 border-amber-500 dark:border-gray-700 focus:border-amber-600 text-xs sm:text-sm h-10"
                   />
                 </div>
                 <Button
@@ -197,7 +210,7 @@ export default function InventoryPage() {
                       setProductModalOpen(true)
                     }
                   }}
-                  className="bg-yellow-500 text-black hover:bg-yellow-600 shrink-0 h-10 w-10"
+                  className="bg-amber-600 text-white hover:bg-amber-700 shrink-0 h-10 w-10"
                   size="icon"
                 >
                   <Plus className="h-4 w-4" />
@@ -206,7 +219,7 @@ export default function InventoryPage() {
             </div>
 
             <TabsContent value="services" className="mt-0 w-full">
-              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full hidden sm:block">
+              <div className="rounded-md border border-amber-500 dark:border-gray-700 w-full hidden sm:block">
                 <div className="overflow-x-auto w-full">
                   <Table>
                     <TableHeader>
@@ -278,10 +291,10 @@ export default function InventoryPage() {
                   <div className="text-center py-4 text-muted-foreground text-xs">Tidak ada layanan ditemukan</div>
                 ) : (
                   filteredServices.map((service) => (
-                    <div key={service.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                    <div key={service.id} className="rounded-lg border border-amber-500 dark:border-gray-700 p-3 bg-card">
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-medium text-foreground text-xs">{service.name}</div>
-                        <Badge variant={service.isActive ? "default" : "secondary"} className={service.isActive ? "bg-green-500 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                        <Badge variant={service.isActive ? "success" : "secondary"} className="text-xs px-1.5 py-0.5">
                           {service.isActive ? "Aktif" : "Nonaktif"}
                         </Badge>
                       </div>
@@ -302,7 +315,7 @@ export default function InventoryPage() {
             </TabsContent>
 
             <TabsContent value="products" className="mt-0 w-full">
-              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full hidden sm:block">
+              <div className="rounded-md border border-amber-500 dark:border-gray-700 w-full hidden sm:block">
                 <div className="overflow-x-auto w-full">
                   <Table>
                     <TableHeader>
@@ -336,7 +349,7 @@ export default function InventoryPage() {
                                 {product.stock <= 5 && product.isActive && (
                                   <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 shrink-0" />
                                 )}
-                                <span className="truncate max-w-[80px] sm:max-w-none">{product.name}</span>
+                                <span className="truncate max-w-[120px] sm:max-w-none" title={product.name}>{product.name}</span>
                               </div>
                             </TableCell>
                             <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1 hidden sm:table-cell">
@@ -347,16 +360,16 @@ export default function InventoryPage() {
                             </TableCell>
                             <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1">
                               <Badge 
-                                variant={product.stock <= 5 ? "destructive" : "outline"}
-                                className={product.stock <= 5 ? "bg-red-500 hover:bg-red-600 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}
+                                variant={product.stock <= 5 ? "danger" : "outline"}
+                                className="text-xs px-1.5 py-0.5"
                               >
                                 {product.stock}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center py-1.5 px-1 hidden sm:table-cell">
                               <Badge 
-                                variant={product.isActive ? "default" : "secondary"}
-                                className={product.isActive ? "bg-green-500 hover:bg-green-600 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}
+                                variant={product.isActive ? "success" : "secondary"}
+                                className="text-xs px-1.5 py-0.5"
                               >
                                 {product.isActive ? "Aktif" : "Nonaktif"}
                               </Badge>
@@ -401,7 +414,7 @@ export default function InventoryPage() {
                   <div className="text-center py-4 text-muted-foreground text-xs">Tidak ada produk ditemukan</div>
                 ) : (
                   filteredProducts.map((product) => (
-                    <div key={product.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                    <div key={product.id} className="rounded-lg border border-amber-500 dark:border-gray-700 p-3 bg-card">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-1">
                           {product.stock <= 5 && product.isActive && <AlertTriangle className="h-3 w-3 text-red-500" />}
@@ -418,7 +431,7 @@ export default function InventoryPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground block">Status</span>
-                          <Badge variant={product.isActive ? "default" : "secondary"} className={product.isActive ? "bg-green-500 text-xs px-1.5 py-0.5 mt-0.5" : "text-xs px-1.5 py-0.5 mt-0.5"}>
+                          <Badge variant={product.isActive ? "success" : "secondary"} className="text-xs px-1.5 py-0.5 mt-0.5">
                             {product.isActive ? "Aktif" : "Nonaktif"}
                           </Badge>
                         </div>

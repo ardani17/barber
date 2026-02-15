@@ -977,17 +977,18 @@ export default function TransactionsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Tanggal</Label>
+              <Label htmlFor="expenseDate">Tanggal</Label>
               <Input
+                id="expenseDate"
                 type="date"
                 value={expenseForm.date ? expenseForm.date.toISOString().split("T")[0] : ""}
                 onChange={(e) => setExpenseForm({ ...expenseForm, date: new Date(e.target.value) })}
               />
             </div>
             <div>
-              <Label>Kategori</Label>
+              <Label htmlFor="expenseCategory">Kategori</Label>
               <Select value={expenseForm.category} onValueChange={(value: "RENT" | "UTILITIES" | "SUPPLIES" | "OTHER") => setExpenseForm({ ...expenseForm, category: value })}>
-                <SelectTrigger>
+                <SelectTrigger id="expenseCategory">
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1000,9 +1001,9 @@ export default function TransactionsPage() {
               </Select>
             </div>
             <div>
-              <Label>Akun Kas</Label>
+              <Label htmlFor="expenseAccount">Akun Kas</Label>
               <Select value={expenseForm.accountId} onValueChange={(value: string) => setExpenseForm({ ...expenseForm, accountId: value })}>
-                <SelectTrigger>
+                <SelectTrigger id="expenseAccount">
                   <SelectValue placeholder="Pilih akun kas (opsional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1015,8 +1016,9 @@ export default function TransactionsPage() {
               </Select>
             </div>
             <div>
-              <Label>Jumlah</Label>
+              <Label htmlFor="expenseAmount">Jumlah</Label>
               <Input
+                id="expenseAmount"
                 type="number"
                 placeholder="Masukkan jumlah"
                 value={expenseForm.amount}
@@ -1024,8 +1026,9 @@ export default function TransactionsPage() {
               />
             </div>
             <div>
-              <Label>Deskripsi</Label>
+              <Label htmlFor="expenseDescription">Deskripsi</Label>
               <Input
+                id="expenseDescription"
                 placeholder="Masukkan deskripsi"
                 value={expenseForm.description}
                 onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}

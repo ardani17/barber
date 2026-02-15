@@ -591,7 +591,7 @@ export default function CashflowPage() {
                                 <div className={`p-1 sm:p-2 rounded-lg ${accountTypeIcons[account.type].color}`}>
                                   <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </div>
-                                <span className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-[150px]">{account.name}</span>
+                                <span className="font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-[150px]" title={account.name}>{account.name}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -610,7 +610,7 @@ export default function CashflowPage() {
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
                               {account.isDefault ? (
-                                <Badge variant="default" className="bg-yellow-500 text-black text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
+                                <Badge variant="default" className="bg-amber-500 text-amber-950 text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
                                   Default
                                 </Badge>
                               ) : (
@@ -675,7 +675,7 @@ export default function CashflowPage() {
                       </div>
                       <div className="text-sm font-bold mb-2">{formatCurrency(parseFloat(account.balance))}</div>
                       <div className="flex items-center justify-between">
-                        <Badge variant={account.isActive ? "default" : "secondary"} className={account.isActive ? "bg-green-500 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                        <Badge variant={account.isActive ? "default" : "secondary"} className={account.isActive ? "bg-green-600 text-white text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
                           {account.isActive ? "Aktif" : "Nonaktif"}
                         </Badge>
                         <div className="flex gap-1">

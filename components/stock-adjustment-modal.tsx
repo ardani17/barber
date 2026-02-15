@@ -147,9 +147,10 @@ export function StockAdjustmentModal({ open, onOpenChange, onSuccess, productDat
                 placeholder="0"
                 {...register("adjustment", { valueAsNumber: true })}
                 className="text-sm"
+                aria-describedby={errors.adjustment ? "adjustment-error" : undefined}
               />
               {errors.adjustment && (
-                <p className="text-xs sm:text-sm text-red-500">{errors.adjustment.message}</p>
+                <p id="adjustment-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.adjustment.message}</p>
               )}
             </div>
 
@@ -175,13 +176,14 @@ export function StockAdjustmentModal({ open, onOpenChange, onSuccess, productDat
                 placeholder="Contoh: Restock barang baru, Barang rusak, dll."
                 {...register("reason")}
                 className="text-sm"
+                aria-describedby={errors.reason ? "reason-error" : undefined}
               />
               {errors.reason && (
-                <p className="text-xs sm:text-sm text-red-500">{errors.reason.message}</p>
+                <p id="reason-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.reason.message}</p>
               )}
             </div>
 
-            {error && <p className="text-xs sm:text-sm text-red-500">{error}</p>}
+            {error && <p className="text-xs sm:text-sm text-red-500" role="alert">{error}</p>}
           </div>
           <DialogFooter className="gap-2 sm:gap-0 flex-col sm:flex-row">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="w-full sm:w-auto">

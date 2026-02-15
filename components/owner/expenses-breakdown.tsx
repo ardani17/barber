@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Wallet } from "lucide-react"
@@ -8,7 +9,7 @@ interface ExpensesBreakdownProps {
   loading?: boolean
 }
 
-export function ExpensesBreakdown({ categories, loading }: ExpensesBreakdownProps) {
+const ExpensesBreakdownComponent = ({ categories, loading }: ExpensesBreakdownProps) => {
   const categoryIcons: Record<string, string> = {
     RENT: "🏠",
     UTILITIES: "💡",
@@ -59,3 +60,6 @@ export function ExpensesBreakdown({ categories, loading }: ExpensesBreakdownProp
     </Card>
   )
 }
+
+export const ExpensesBreakdown = memo(ExpensesBreakdownComponent)
+ExpensesBreakdown.displayName = "ExpensesBreakdown"

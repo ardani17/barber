@@ -18,8 +18,8 @@ export default async function OwnerLayout({
   return (
     <div className="flex min-h-screen bg-muted">
       <DashboardSidebar />
-      <main className="flex-1">
-        <header className="border-b border-yellow-500 bg-card sticky top-0 z-10">
+      <main id="main-content" role="main" aria-label="Konten utama" className="flex-1">
+        <header role="banner" className="border-b border-yellow-500 bg-card sticky top-0 z-10">
           <div className="px-6 py-4 flex items-center justify-end gap-4">
             <span className="text-foreground">
               {session.user?.name}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
+import { Ratelimit } from "@upstash/ratelimit"
 import { redisClient } from "./redis"
-import { logError } from "./logger"
+import { logError, logInfo } from "./logger"
 
 interface RateLimitData {
   count: number
@@ -9,8 +10,22 @@ interface RateLimitData {
 
 const inMemoryStore = new Map<string, RateLimitData>()
 
-function getRedisKey(identifier: string): string {
-  return `ratelimit:${identifier}`
+let ratelimit: Ratelimit | null = null
+
+function getRatelimit(windowMs: number = 10000, limit: number = 5): Ratelimit | null {
+  if (!redisClient) return null
+
+  if (!ratelimit) {
+    ratelimit = new Ratelimit({
+      redis: redisClient,
+      limiter: Ratelimit.slidingWindow(limit, `${Math.ceil(windowMs / 1000)} s`),
+      analytics: true,
+      prefix: "baberv3:ratelimit",
+    })
+    logInfo("RateLimit", "Upstash Ratelimit initialized", { limit, windowMs })
+  }
+
+  return ratelimit
 }
 
 export async function checkRateLimit(
@@ -24,12 +39,12 @@ export async function checkRateLimit(
   reset: string
 }> {
   if (redisClient) {
-    return checkRateLimitRedis(identifier, limit, windowMs)
+    return checkRateLimitUpstash(identifier, limit, windowMs)
   }
   return checkRateLimitMemory(identifier, limit, windowMs)
 }
 
-async function checkRateLimitRedis(
+async function checkRateLimitUpstash(
   identifier: string,
   limit: number,
   windowMs: number
@@ -39,48 +54,23 @@ async function checkRateLimitRedis(
   remaining: number
   reset: string
 }> {
-  if (!redisClient) {
-    return checkRateLimitMemory(identifier, limit, windowMs)
-  }
-
-  const key = getRedisKey(identifier)
-  const now = Date.now()
-  const windowSeconds = Math.ceil(windowMs / 1000)
-
   try {
-    const current = await redisClient.get<string>(key)
-    const count = current ? parseInt(current, 10) : 0
-
-    if (count === 0) {
-      await redisClient.setex(key, windowSeconds, "1")
-      return {
-        success: true,
-        limit,
-        remaining: limit - 1,
-        reset: new Date(now + windowMs).toISOString(),
-      }
+    const limiter = getRatelimit(windowMs, limit)
+    
+    if (!limiter) {
+      return checkRateLimitMemory(identifier, limit, windowMs)
     }
 
-    if (count >= limit) {
-      const ttl = await redisClient.ttl(key)
-      const resetTime = now + (ttl > 0 ? ttl * 1000 : windowMs)
-      return {
-        success: false,
-        limit,
-        remaining: 0,
-        reset: new Date(resetTime).toISOString(),
-      }
-    }
+    const { success, remaining, reset } = await limiter.limit(identifier)
 
-    await redisClient.incr(key)
     return {
-      success: true,
+      success,
       limit,
-      remaining: limit - count - 1,
-      reset: new Date(now + windowMs).toISOString(),
+      remaining,
+      reset: new Date(reset).toISOString(),
     }
   } catch (error) {
-    logError("RateLimit", "Redis error, falling back to in-memory", error)
+    logError("RateLimit", "Upstash error, falling back to in-memory", error)
     return checkRateLimitMemory(identifier, limit, windowMs)
   }
 }

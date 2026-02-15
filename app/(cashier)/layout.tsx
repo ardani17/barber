@@ -44,7 +44,7 @@ export default async function CashierLayout({
           </div>
         </div>
       </header>
-      <main className="p-4">
+      <main id="main-content" role="main" aria-label="Konten utama" className="p-4">
         {children}
       </main>
     </div>

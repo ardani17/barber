@@ -43,6 +43,8 @@ export function DashboardSidebar() {
       </button>
 
       <aside
+        role="navigation"
+        aria-label="Menu navigasi utama"
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-yellow-500 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:relative lg:transform-none lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -58,7 +60,7 @@ export function DashboardSidebar() {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="p-4 space-y-1">
+        <nav aria-label="Menu dashboard" className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href

@@ -122,9 +122,10 @@ export function ProductModal({ open, onOpenChange, onSuccess, editData }: Produc
                 placeholder="Contoh: Pomade"
                 {...register("name")}
                 className="text-sm"
+                aria-describedby={errors.name ? "name-error" : undefined}
               />
               {errors.name && (
-                <p className="text-xs sm:text-sm text-red-500">{errors.name.message}</p>
+                <p id="name-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.name.message}</p>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -137,9 +138,10 @@ export function ProductModal({ open, onOpenChange, onSuccess, editData }: Produc
                   placeholder="0"
                   {...register("buyPrice")}
                   className="text-sm"
+                  aria-describedby={errors.buyPrice ? "buyPrice-error" : undefined}
                 />
                 {errors.buyPrice && (
-                  <p className="text-xs sm:text-sm text-red-500">{errors.buyPrice.message}</p>
+                  <p id="buyPrice-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.buyPrice.message}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -151,9 +153,10 @@ export function ProductModal({ open, onOpenChange, onSuccess, editData }: Produc
                   placeholder="0"
                   {...register("sellPrice")}
                   className="text-sm"
+                  aria-describedby={errors.sellPrice ? "sellPrice-error" : undefined}
                 />
                 {errors.sellPrice && (
-                  <p className="text-xs sm:text-sm text-red-500">{errors.sellPrice.message}</p>
+                  <p id="sellPrice-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.sellPrice.message}</p>
                 )}
               </div>
             </div>
@@ -170,7 +173,7 @@ export function ProductModal({ open, onOpenChange, onSuccess, editData }: Produc
                 />
               </div>
             )}
-            {error && <p className="text-xs sm:text-sm text-red-500">{error}</p>}
+            {error && <p className="text-xs sm:text-sm text-red-500" role="alert">{error}</p>}
           </div>
           <DialogFooter className="gap-2 sm:gap-0 flex-col sm:flex-row">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="w-full sm:w-auto">

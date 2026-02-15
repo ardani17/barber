@@ -2,6 +2,7 @@
 
 import { SalaryPayment } from '../../types/types'
 import { Calendar, DollarSign, CreditCard, Wallet } from 'lucide-react'
+import { ExpandableCard } from '@/components/ui/expandable-card'
 
 interface PaymentCardProps {
   payment: SalaryPayment
@@ -27,22 +28,32 @@ export function PaymentCard({ payment, barberName }: PaymentCardProps) {
     return numAmount > 0
   }
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="font-semibold text-gray-900">Pembayaran Gaji</h3>
+  const summaryContent = (
+    <>
+      <div className="flex items-start justify-between">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-gray-900 truncate">Pembayaran Gaji</h3>
           {barberName && (
-            <p className="text-sm text-gray-500">{barberName}</p>
+            <p className="text-sm text-gray-500 truncate">{barberName}</p>
           )}
         </div>
-        <div className="flex items-center gap-1 text-sm text-gray-500">
+        <div className="flex items-center gap-1 text-sm text-gray-500 shrink-0">
           <Calendar className="w-4 h-4" />
-          <span>{formatDate(payment.paymentDate)}</span>
+          <span className="hidden sm:inline">{formatDate(payment.paymentDate)}</span>
         </div>
       </div>
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-sm text-gray-500">Total</span>
+        <span className="font-bold text-base sm:text-lg text-blue-600">
+          {formatCurrency(payment.totalAmount)}
+        </span>
+      </div>
+    </>
+  )
 
-      <div className="space-y-2 mb-3">
+  const detailContent = (
+    <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Periode:</span>
           <span className="text-gray-900">
@@ -75,13 +86,8 @@ export function PaymentCard({ payment, barberName }: PaymentCardProps) {
         )}
       </div>
 
-      <div className="border-t border-gray-200 pt-3">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-semibold text-gray-900">Total:</span>
-          <span className="font-bold text-lg text-blue-600">
-            {formatCurrency(payment.totalAmount)}
-          </span>
-        </div>
+      <div className="border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-500 mb-2">Metode Pembayaran</p>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-2 text-gray-600">
             <Wallet className="w-4 h-4" />
@@ -95,10 +101,17 @@ export function PaymentCard({ payment, barberName }: PaymentCardProps) {
       </div>
 
       {payment.notes && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <p className="text-sm text-gray-500">{payment.notes}</p>
+        <div className="border-t border-gray-100 pt-3">
+          <p className="text-xs text-gray-500 mb-1">Catatan</p>
+          <p className="text-sm text-gray-700">{payment.notes}</p>
         </div>
       )}
     </div>
+  )
+
+  return (
+    <ExpandableCard summary={summaryContent}>
+      {detailContent}
+    </ExpandableCard>
   )
 }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Modal } from './ui/modal'
-import { Input } from './ui/input'
-import { Textarea } from './ui/textarea'
-import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import { ZodError } from 'zod'
 import { logError } from '@/lib/logger'
 
@@ -61,40 +62,52 @@ export function DebtModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Tambah Hutang">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {barberName && (
-          <div>
-            <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Tambah Hutang</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {barberName && (
+            <div>
+              <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="debtAmount">Jumlah Hutang</Label>
+            <Input
+              id="debtAmount"
+              type="number"
+              step="0.01"
+              value={formData.amount || ''}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              required
+            />
           </div>
-        )}
-        
-        <Input
-          label="Jumlah Hutang"
-          type="number"
-          step="0.01"
-          value={formData.amount || ''}
-          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-          required
-        />
-        
-        <Textarea
-          label="Alasan"
-          value={formData.reason}
-          onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-          rows={3}
-          required
-        />
-        
-        <div className="flex gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            Batal
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Menyimpan...' : 'Simpan'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          
+          <div className="space-y-2">
+            <Label htmlFor="debtReason">Alasan</Label>
+            <Textarea
+              id="debtReason"
+              value={formData.reason}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              rows={3}
+              required
+              placeholder="Alasan hutang"
+            />
+          </div>
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Batal
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

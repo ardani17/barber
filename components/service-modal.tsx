@@ -114,9 +114,10 @@ export function ServiceModal({ open, onOpenChange, onSuccess, editData }: Servic
                 placeholder="Contoh: Potong Rambut"
                 {...register("name")}
                 className="text-sm"
+                aria-describedby={errors.name ? "name-error" : undefined}
               />
               {errors.name && (
-                <p className="text-xs sm:text-sm text-red-500">{errors.name.message}</p>
+                <p id="name-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.name.message}</p>
               )}
             </div>
             <div className="grid gap-2">
@@ -128,9 +129,10 @@ export function ServiceModal({ open, onOpenChange, onSuccess, editData }: Servic
                 placeholder="0"
                 {...register("price")}
                 className="text-sm"
+                aria-describedby={errors.price ? "price-error" : undefined}
               />
               {errors.price && (
-                <p className="text-xs sm:text-sm text-red-500">{errors.price.message}</p>
+                <p id="price-error" className="text-xs sm:text-sm text-red-500" role="alert">{errors.price.message}</p>
               )}
             </div>
             {error && <p className="text-xs sm:text-sm text-red-500">{error}</p>}

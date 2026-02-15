@@ -71,17 +71,17 @@ export default function AttendancePage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'HADIR':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+        return 'bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100'
       case 'PULANG':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+        return 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100'
       case 'IZIN':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+        return 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100'
       case 'SAKIT':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+        return 'bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-100'
       case 'LIBUR':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        return 'bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-100'
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        return 'bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100'
     }
   }
 
@@ -112,7 +112,7 @@ export default function AttendancePage() {
         <p className="text-xs sm:text-base text-gray-600">Monitor kehadiran capster harian</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-2 sm:p-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -272,7 +272,7 @@ export default function AttendancePage() {
                 {filteredAttendances.map((attendance) => (
                   <tr key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate max-w-[80px] sm:max-w-none">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none" title={attendance.barber.name}>
                         {attendance.barber.name}
                       </div>
                     </td>

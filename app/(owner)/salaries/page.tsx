@@ -11,6 +11,7 @@ import { getSalaryPeriods, getSalaryPayments, getSalaryDebts, getSalaryAdjustmen
 import { getBarbers } from '@/actions/barbers'
 import type { SalaryPeriod, SalaryPayment, SalaryDebt, SalaryAdjustment, Barber } from './types/types'
 import { ZodError } from 'zod'
+import { PullToRefreshContainer } from '@/hooks/use-pull-to-refresh'
 
 interface PeriodFormData {
   barberId: string
@@ -383,7 +384,7 @@ export default function SalariesPage() {
   }
 
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
+    <PullToRefreshContainer onRefresh={loadData} className="container mx-auto py-4 sm:py-8 px-3 sm:px-4">
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Manajemen Gaji</h1>
@@ -429,7 +430,7 @@ export default function SalariesPage() {
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                       {period.isActive && (
-                        <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-xs font-medium bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100">
                           Aktif
                         </span>
                       )}
@@ -610,18 +611,21 @@ export default function SalariesPage() {
             </div>
 
             <div>
-              <Label className="text-xs sm:text-xs">Nama Periode *</Label>
+              <Label htmlFor="periodName" className="text-xs sm:text-xs">Nama Periode *</Label>
               <Input
+                id="periodName"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Contoh: Gaji Januari 2025"
                 className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                aria-describedby="periodName-hint"
               />
             </div>
 
             <div>
-              <Label className="text-xs sm:text-xs">Tanggal Mulai *</Label>
+              <Label htmlFor="periodStartDate" className="text-xs sm:text-xs">Tanggal Mulai *</Label>
               <Input
+                id="periodStartDate"
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
@@ -630,8 +634,9 @@ export default function SalariesPage() {
             </div>
 
             <div>
-              <Label className="text-xs sm:text-xs">Tanggal Akhir *</Label>
+              <Label htmlFor="periodEndDate" className="text-xs sm:text-xs">Tanggal Akhir *</Label>
               <Input
+                id="periodEndDate"
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
@@ -954,6 +959,6 @@ export default function SalariesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PullToRefreshContainer>
   )
 }

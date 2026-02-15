@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Modal } from './ui/modal'
-import { Input } from './ui/input'
-import { Textarea } from './ui/textarea'
-import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import { ZodError } from 'zod'
 import { logError } from '@/lib/logger'
 
@@ -77,105 +78,149 @@ export function PaymentModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Pembayaran Gaji">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {barberName && (
-          <div>
-            <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Pembayaran Gaji</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {barberName && (
+            <div>
+              <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="periodStart">Tanggal Mulai Periode</Label>
+              <Input
+                id="periodStart"
+                type="date"
+                value={formData.periodStart}
+                onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="periodEnd">Tanggal Selesai Periode</Label>
+              <Input
+                id="periodEnd"
+                type="date"
+                value={formData.periodEnd}
+                onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
+                required
+              />
+            </div>
           </div>
-        )}
-        
-        <Input
-          label="Tanggal Mulai Periode"
-          type="date"
-          value={formData.periodStart}
-          onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
-          required
-        />
-        
-        <Input
-          label="Tanggal Selesai Periode"
-          type="date"
-          value={formData.periodEnd}
-          onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
-          required
-        />
-        
-        <Input
-          label="Gaji Pokok"
-          type="number"
-          step="0.01"
-          value={formData.baseSalaryAmount || ''}
-          onChange={(e) => setFormData({ ...formData, baseSalaryAmount: parseFloat(e.target.value) || 0 })}
-        />
-        
-        <Input
-          label="Komisi"
-          type="number"
-          step="0.01"
-          value={formData.commissionAmount || ''}
-          onChange={(e) => setFormData({ ...formData, commissionAmount: parseFloat(e.target.value) || 0 })}
-        />
-        
-        <Input
-          label="Bonus"
-          type="number"
-          step="0.01"
-          value={formData.bonusAmount || ''}
-          onChange={(e) => setFormData({ ...formData, bonusAmount: parseFloat(e.target.value) || 0 })}
-        />
-        
-        <Input
-          label="Potongan"
-          type="number"
-          step="0.01"
-          value={formData.deductionAmount || ''}
-          onChange={(e) => setFormData({ ...formData, deductionAmount: parseFloat(e.target.value) || 0 })}
-        />
-        
-        <Input
-          label="Total Gaji (Manual)"
-          type="number"
-          step="0.01"
-          value={formData.totalAmount || ''}
-          onChange={(e) => setFormData({ ...formData, totalAmount: parseFloat(e.target.value) || 0 })}
-          required
-        />
-        
-        <Input
-          label="Jumlah Cash"
-          type="number"
-          step="0.01"
-          value={formData.cashAmount || ''}
-          onChange={(e) => setFormData({ ...formData, cashAmount: e.target.value })}
-          required
-        />
-        
-        <Input
-          label="Jumlah QRIS"
-          type="number"
-          step="0.01"
-          value={formData.qrisAmount || ''}
-          onChange={(e) => setFormData({ ...formData, qrisAmount: e.target.value })}
-          required
-        />
-        
-        <Textarea
-          label="Catatan"
-          value={formData.notes || ''}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-        />
-        
-        <div className="flex gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            Batal
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Menyimpan...' : 'Simpan'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="baseSalaryAmount">Gaji Pokok</Label>
+              <Input
+                id="baseSalaryAmount"
+                type="number"
+                step="0.01"
+                value={formData.baseSalaryAmount || ''}
+                onChange={(e) => setFormData({ ...formData, baseSalaryAmount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="commissionAmount">Komisi</Label>
+              <Input
+                id="commissionAmount"
+                type="number"
+                step="0.01"
+                value={formData.commissionAmount || ''}
+                onChange={(e) => setFormData({ ...formData, commissionAmount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bonusAmount">Bonus</Label>
+              <Input
+                id="bonusAmount"
+                type="number"
+                step="0.01"
+                value={formData.bonusAmount || ''}
+                onChange={(e) => setFormData({ ...formData, bonusAmount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="deductionAmount">Potongan</Label>
+              <Input
+                id="deductionAmount"
+                type="number"
+                step="0.01"
+                value={formData.deductionAmount || ''}
+                onChange={(e) => setFormData({ ...formData, deductionAmount: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="totalAmount">Total Gaji (Manual)</Label>
+            <Input
+              id="totalAmount"
+              type="number"
+              step="0.01"
+              value={formData.totalAmount || ''}
+              onChange={(e) => setFormData({ ...formData, totalAmount: parseFloat(e.target.value) || 0 })}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cashAmount">Jumlah Cash</Label>
+              <Input
+                id="cashAmount"
+                type="number"
+                step="0.01"
+                value={formData.cashAmount || ''}
+                onChange={(e) => setFormData({ ...formData, cashAmount: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="qrisAmount">Jumlah QRIS</Label>
+              <Input
+                id="qrisAmount"
+                type="number"
+                step="0.01"
+                value={formData.qrisAmount || ''}
+                onChange={(e) => setFormData({ ...formData, qrisAmount: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="notes">Catatan</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes || ''}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              placeholder="Catatan tambahan (opsional)"
+            />
+          </div>
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Batal
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

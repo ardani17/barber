@@ -574,7 +574,7 @@ export default function POSPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
                 {activeTab === "services" &&
                   services.map((service) => (
                     <Button

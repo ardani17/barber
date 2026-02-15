@@ -91,8 +91,8 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <nav className="container mx-auto px-4 py-3 sm:py-4">
+      <main id="main-content" role="main" aria-label="Konten utama" className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <nav aria-label="Menu utama" className="container mx-auto px-4 py-3 sm:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
             BARBERBRO
@@ -100,14 +100,14 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-end gap-2 sm:gap-4">
             <a 
               href="tel:+6285376541422" 
-              className="px-3 sm:px-6 py-2 rounded-lg border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-900/20 transition-colors font-semibold flex items-center gap-2 text-xs sm:text-base"
+              className="px-3 sm:px-6 py-2 rounded-lg border-2 border-amber-500 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20 transition-colors font-semibold flex items-center gap-2 text-xs sm:text-base"
             >
               <Phone className="w-4 h-4" />
               <span className="hidden sm:inline">Hubungi Kami</span>
             </a>
             <Link 
               href="#booking" 
-              className="px-3 sm:px-6 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors font-semibold text-xs sm:text-base"
+              className="px-3 sm:px-6 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors font-semibold text-xs sm:text-base"
             >
               <span className="hidden sm:inline">Booking Sekarang</span>
               <span className="sm:hidden">Booking</span>
@@ -122,7 +122,7 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </nav>
+        </nav>
 
         <section className="container mx-auto px-4 py-8 sm:py-16 md:py-20 text-center">
           <div className="max-w-4xl mx-auto">
@@ -138,7 +138,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link 
                 href="#booking" 
-                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors font-bold text-sm sm:text-base lg:text-lg flex items-center justify-center gap-2"
+                className="px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors font-bold text-sm sm:text-base lg:text-lg flex items-center justify-center gap-2"
               >
                 Booking Appointment
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -471,7 +471,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <footer className="bg-gray-900 text-white py-12">
+        <footer role="contentinfo" className="bg-gray-900 text-white py-12">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-4 gap-8 mb-8">
               <div>

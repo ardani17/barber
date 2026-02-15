@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Modal } from './ui/modal'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { ZodError } from 'zod'
 import { logError } from '@/lib/logger'
 
@@ -68,52 +69,63 @@ export function PeriodModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Periode Gaji">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {barberName && (
-          <div>
-            <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Periode Gaji</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {barberName && (
+            <div>
+              <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="periodStart">Tanggal Mulai</Label>
+            <Input
+              id="periodStart"
+              type="date"
+              value={formData.periodStart}
+              onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
+              required
+            />
           </div>
-        )}
-        
-        <Input
-          label="Tanggal Mulai"
-          type="date"
-          value={formData.periodStart}
-          onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
-          required
-        />
-        
-        <Input
-          label="Tanggal Selesai"
-          type="date"
-          value={formData.periodEnd}
-          onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
-          required
-        />
-        
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-            Periode Aktif
-          </label>
-        </div>
-        
-        <div className="flex gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            Batal
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Menyimpan...' : 'Simpan'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          
+          <div className="space-y-2">
+            <Label htmlFor="periodEnd">Tanggal Selesai</Label>
+            <Input
+              id="periodEnd"
+              type="date"
+              value={formData.periodEnd}
+              onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isActive"
+              checked={formData.isActive}
+              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <Label htmlFor="isActive" className="cursor-pointer">
+              Periode Aktif
+            </Label>
+          </div>
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Batal
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

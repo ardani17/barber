@@ -378,7 +378,7 @@ export default function SettingsPage() {
                             <p className="text-xs font-medium">{cashier.username}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{cashier.email}</p>
                           </div>
-                          <Badge variant={cashier.role === "OWNER" ? "default" : "secondary"} className={cashier.role === "OWNER" ? "bg-yellow-500 text-black text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                          <Badge variant={cashier.role === "OWNER" ? "warning" : "secondary"} className="text-xs px-1.5 py-0.5">
                             {cashier.role === "OWNER" ? "Owner" : "Kasir"}
                           </Badge>
                         </div>

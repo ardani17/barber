@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
 import { formatCurrency } from "@/lib/decimal"
@@ -18,7 +19,7 @@ interface MetricCardProps {
   footer?: React.ReactNode
 }
 
-export function MetricCard({
+const MetricCardComponent = ({
   title,
   value,
   icon: Icon,
@@ -26,7 +27,7 @@ export function MetricCard({
   loading = false,
   trend,
   footer
-}: MetricCardProps) {
+}: MetricCardProps) => {
   return (
     <Card className="border-yellow-500 dark:border-gray-700 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -59,3 +60,6 @@ export function MetricCard({
     </Card>
   )
 }
+
+export const MetricCard = memo(MetricCardComponent)
+MetricCard.displayName = "MetricCard"

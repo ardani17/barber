@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Modal } from './ui/modal'
-import { Input } from './ui/input'
-import { Select } from './ui/select'
-import { Textarea } from './ui/textarea'
-import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ZodError } from 'zod'
 import { logError } from '@/lib/logger'
 
@@ -68,67 +69,92 @@ export function AdjustmentModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Tambah Penyesuaian">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {barberName && (
-          <div>
-            <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Tambah Penyesuaian</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {barberName && (
+            <div>
+              <p className="text-sm text-gray-600">Barber: <strong>{barberName}</strong></p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="adjPeriodStart">Tanggal Mulai Periode</Label>
+              <Input
+                id="adjPeriodStart"
+                type="date"
+                value={formData.periodStart}
+                onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="adjPeriodEnd">Tanggal Selesai Periode</Label>
+              <Input
+                id="adjPeriodEnd"
+                type="date"
+                value={formData.periodEnd}
+                onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
+                required
+              />
+            </div>
           </div>
-        )}
 
-        <Input
-          label="Tanggal Mulai Periode"
-          type="date"
-          value={formData.periodStart}
-          onChange={(e) => setFormData({ ...formData, periodStart: e.target.value })}
-          required
-        />
+          <div className="space-y-2">
+            <Label htmlFor="adjType">Tipe</Label>
+            <Select
+              value={formData.type}
+              onValueChange={(value) => setFormData({ ...formData, type: value as 'BONUS' | 'DEDUCTION' })}
+            >
+              <SelectTrigger id="adjType" className="w-full">
+                <SelectValue placeholder="Pilih tipe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="BONUS">Bonus</SelectItem>
+                <SelectItem value="DEDUCTION">Potongan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Input
-          label="Tanggal Selesai Periode"
-          type="date"
-          value={formData.periodEnd}
-          onChange={(e) => setFormData({ ...formData, periodEnd: e.target.value })}
-          required
-        />
+          <div className="space-y-2">
+            <Label htmlFor="adjAmount">Jumlah</Label>
+            <Input
+              id="adjAmount"
+              type="number"
+              step="0.01"
+              value={formData.amount || ''}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              required
+            />
+          </div>
 
-        <Select
-          label="Tipe"
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as 'BONUS' | 'DEDUCTION' })}
-          options={[
-            { value: 'BONUS', label: 'Bonus' },
-            { value: 'DEDUCTION', label: 'Potongan' }
-          ]}
-          required
-        />
-
-        <Input
-          label="Jumlah"
-          type="number"
-          step="0.01"
-          value={formData.amount || ''}
-          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-          required
-        />
-
-        <Textarea
-          label="Alasan"
-          value={formData.reason}
-          onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-          rows={3}
-          required
-        />
-        
-        <div className="flex gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-            Batal
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Menyimpan...' : 'Simpan'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          <div className="space-y-2">
+            <Label htmlFor="adjReason">Alasan</Label>
+            <Textarea
+              id="adjReason"
+              value={formData.reason}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              rows={3}
+              required
+              placeholder="Alasan penyesuaian"
+            />
+          </div>
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Batal
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
