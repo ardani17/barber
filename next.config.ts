@@ -4,9 +4,7 @@ const isProduction = process.env.NODE_ENV === "production"
 
 const cspDirectives = [
   "default-src 'self'",
-  isProduction 
-    ? "script-src 'self'" 
-    : "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
