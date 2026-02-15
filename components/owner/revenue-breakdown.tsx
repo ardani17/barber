@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Scissors, Package, CreditCard } from "lucide-react"
@@ -10,7 +11,7 @@ interface RevenueBreakdownProps {
   loading?: boolean
 }
 
-export function RevenueBreakdown({ topServices, topProducts, paymentMethods, loading }: RevenueBreakdownProps) {
+const RevenueBreakdownComponent = ({ topServices, topProducts, paymentMethods, loading }: RevenueBreakdownProps) => {
   const paymentMethodLabels: Record<string, string> = {
     CASH: "Tunai",
     TRANSFER: "Transfer Bank",
@@ -111,3 +112,6 @@ export function RevenueBreakdown({ topServices, topProducts, paymentMethods, loa
     </Card>
   )
 }
+
+export const RevenueBreakdown = memo(RevenueBreakdownComponent)
+RevenueBreakdown.displayName = "RevenueBreakdown"

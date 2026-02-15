@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { logError } from "@/lib/logger"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -39,7 +40,7 @@ export default function BarbersPage() {
       const data = await getBarbers()
       setBarbers(data)
     } catch (error) {
-      console.error('Error loading barbers:', error)
+      logError("Barbers", "Error loading barbers", error)
     } finally {
       setLoading(false)
     }
@@ -98,7 +99,7 @@ export default function BarbersPage() {
       setModalOpen(false)
       loadBarbers()
     } catch (error) {
-      console.error('Error saving barber:', error)
+      logError('Barbers', 'Gagal menyimpan data capster', error)
       alert(error instanceof Error ? error.message : 'Gagal menyimpan data capster')
     } finally {
       setSubmitting(false)
@@ -110,7 +111,7 @@ export default function BarbersPage() {
       await toggleBarberActive(id)
       loadBarbers()
     } catch (error) {
-      console.error('Error toggling barber:', error)
+      logError("Barbers", "Error toggling barber", error)
       alert('Gagal mengubah status capster')
     }
   }
@@ -177,7 +178,7 @@ export default function BarbersPage() {
                   <div className="flex items-start justify-between mb-3 sm:mb-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-0.5 sm:mb-1 truncate">{barber.name}</h3>
-                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-medium bg-green-100 text-green-800">
                         Aktif
                       </span>
                     </div>
@@ -186,7 +187,7 @@ export default function BarbersPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenModal(barber)}
-                        className="h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
                       >
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
@@ -194,14 +195,14 @@ export default function BarbersPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleActive(barber.id)}
-                        className="h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
                       >
                         <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-2 sm:space-y-3 text-[10px] sm:text-sm">
+                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">Tipe Kompensasi:</span>
                       <p className="font-medium text-gray-900 dark:text-white">
@@ -244,7 +245,7 @@ export default function BarbersPage() {
                   <div className="flex items-start justify-between mb-3 sm:mb-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1 truncate">{barber.name}</h3>
-                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gray-100 text-gray-600">
+                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-medium bg-gray-100 text-gray-600">
                         Non-Aktif
                       </span>
                     </div>
@@ -253,7 +254,7 @@ export default function BarbersPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenModal(barber)}
-                        className="h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
                       >
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
@@ -261,14 +262,14 @@ export default function BarbersPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleActive(barber.id)}
-                        className="h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 w-7 sm:h-auto sm:w-auto p-0 sm:p-2"
                       >
                         <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-2 sm:space-y-3 text-[10px] sm:text-sm">
+                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">Tipe Kompensasi:</span>
                       <p className="font-medium text-gray-700 dark:text-gray-300">
@@ -313,95 +314,95 @@ export default function BarbersPage() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-3 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg">{editingBarber ? 'Edit Capster' : 'Tambah Capster Baru'}</DialogTitle>
-            <DialogDescription className="text-[10px] sm:text-sm">
+            <DialogDescription className="text-xs sm:text-sm">
               {editingBarber ? 'Edit data capster yang ada' : 'Tambah capster baru ke sistem'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <Label className="text-[10px] sm:text-sm">Nama Capster *</Label>
+              <Label className="text-xs sm:text-sm">Nama Capster *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Masukkan nama capster"
-                className="h-8 sm:h-10 text-[10px] sm:text-sm"
+                className="h-8 sm:h-10 text-xs sm:text-sm"
               />
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-sm">Tipe Kompensasi *</Label>
+              <Label className="text-xs sm:text-sm">Tipe Kompensasi *</Label>
               <Select value={formData.compensationType} onValueChange={(value: any) => setFormData({ ...formData, compensationType: value })}>
-                <SelectTrigger className="h-8 sm:h-10 text-[10px] sm:text-sm">
+                <SelectTrigger className="h-8 sm:h-10 text-xs sm:text-sm">
                   <SelectValue placeholder="Pilih tipe kompensasi" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="BASE_ONLY" className="text-[10px] sm:text-sm">Gaji Pokok Saja</SelectItem>
-                  <SelectItem value="COMMISSION_ONLY" className="text-[10px] sm:text-sm">Komisi Saja</SelectItem>
-                  <SelectItem value="BOTH" className="text-[10px] sm:text-sm">Gaji Pokok + Komisi</SelectItem>
+                  <SelectItem value="BASE_ONLY" className="text-xs sm:text-sm">Gaji Pokok Saja</SelectItem>
+                  <SelectItem value="COMMISSION_ONLY" className="text-xs sm:text-sm">Komisi Saja</SelectItem>
+                  <SelectItem value="BOTH" className="text-xs sm:text-sm">Gaji Pokok + Komisi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {(formData.compensationType === 'BASE_ONLY' || formData.compensationType === 'BOTH') && (
               <div>
-                <Label className="text-[10px] sm:text-sm">Gaji Pokok *</Label>
+                <Label className="text-xs sm:text-sm">Gaji Pokok *</Label>
                 <Input
                   type="number"
                   value={formData.baseSalary}
                   onChange={(e) => setFormData({ ...formData, baseSalary: e.target.value })}
                   placeholder="0"
-                  className="h-8 sm:h-10 text-[10px] sm:text-sm"
+                  className="h-8 sm:h-10 text-xs sm:text-sm"
                 />
               </div>
             )}
 
             {(formData.compensationType === 'COMMISSION_ONLY' || formData.compensationType === 'BOTH') && (
               <div>
-                <Label className="text-[10px] sm:text-sm">Komisi (Rp) *</Label>
+                <Label className="text-xs sm:text-sm">Komisi (Rp) *</Label>
                 <Input
                   type="number"
                   step="1"
                   value={formData.commissionRate}
                   onChange={(e) => setFormData({ ...formData, commissionRate: e.target.value })}
                   placeholder="0"
-                  className="h-8 sm:h-10 text-[10px] sm:text-sm"
+                  className="h-8 sm:h-10 text-xs sm:text-sm"
                 />
               </div>
             )}
 
             {!editingBarber && (
               <div>
-                <Label className="text-[10px] sm:text-sm">Password *</Label>
+                <Label className="text-xs sm:text-sm">Password *</Label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Minimal 6 karakter"
-                  className="h-8 sm:h-10 text-[10px] sm:text-sm"
+                  className="h-8 sm:h-10 text-xs sm:text-sm"
                 />
               </div>
             )}
 
             {editingBarber && (
               <div>
-                <Label className="text-[10px] sm:text-sm">Password (Opsional)</Label>
+                <Label className="text-xs sm:text-sm">Password (Opsional)</Label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Biarkan kosong jika tidak ingin mengubah"
-                  className="h-8 sm:h-10 text-[10px] sm:text-sm"
+                  className="h-8 sm:h-10 text-xs sm:text-sm"
                 />
               </div>
             )}
           </div>
 
           <DialogFooter className="gap-2 sm:gap-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting} className="h-8 sm:h-10 px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting} className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               Batal
             </Button>
-            <Button onClick={handleSubmit} disabled={submitting} className="h-8 sm:h-10 px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button onClick={handleSubmit} disabled={submitting} className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               {submitting ? 'Menyimpan...' : editingBarber ? 'Simpan' : 'Tambah'}
             </Button>
           </DialogFooter>

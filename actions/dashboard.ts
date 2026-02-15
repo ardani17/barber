@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
+import { logError } from "@/lib/logger"
 
 const getDashboardStatsSchema = z.object({
   startDate: z.date().optional(),
@@ -114,7 +115,7 @@ export async function getDashboardStats(params: z.infer<typeof getDashboardStats
       revenueGrowth: revenueGrowth.toFixed(2)
     }
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error)
+    logError("Dashboard", "Error fetching dashboard stats", error)
     throw new Error("Gagal mengambil data dashboard")
   }
 }
@@ -160,7 +161,7 @@ export async function getRevenueByBarber(startDate: Date, endDate: Date) {
       transactionCount: t._count
     })).sort((a, b) => parseFloat(b.totalRevenue) - parseFloat(a.totalRevenue))
   } catch (error) {
-    console.error("Error fetching revenue by barber:", error)
+    logError("Dashboard", "Error fetching revenue by barber", error)
     throw new Error("Gagal mengambil data pendapatan per barber")
   }
 }
@@ -193,7 +194,7 @@ export async function getRevenueByPaymentMethod(startDate: Date, endDate: Date) 
       transactionCount: t._count
     }))
   } catch (error) {
-    console.error("Error fetching revenue by payment method:", error)
+    logError("Dashboard", "Gagal mengambil data pendapatan per metode pembayaran", error)
     throw new Error("Gagal mengambil data pendapatan per metode pembayaran")
   }
 }
@@ -237,7 +238,7 @@ export async function getDailyRevenue(startDate: Date, endDate: Date) {
       }))
       .sort((a, b) => a.date.localeCompare(b.date))
   } catch (error) {
-    console.error("Error fetching daily revenue:", error)
+    logError("Dashboard", "Error fetching daily revenue", error)
     throw new Error("Gagal mengambil data pendapatan harian")
   }
 }
@@ -289,7 +290,7 @@ export async function getTopServices(startDate: Date, endDate: Date, limit: numb
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, limit)
   } catch (error) {
-    console.error("Error fetching top services:", error)
+    logError("Dashboard", "Gagal mengambil data layanan terpopuler", error)
     throw new Error("Gagal mengambil data layanan terpopuler")
   }
 }
@@ -341,7 +342,7 @@ export async function getTopProducts(startDate: Date, endDate: Date, limit: numb
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, limit)
   } catch (error) {
-    console.error("Error fetching top products:", error)
+    logError("Dashboard", "Error fetching top products", error)
     throw new Error("Gagal mengambil data produk terpopuler")
   }
 }

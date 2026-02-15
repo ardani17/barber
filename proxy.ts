@@ -53,7 +53,10 @@ export async function proxy(request: NextRequest) {
   const isOwnerRoute = pathname.startsWith("/dashboard") || 
                       pathname.startsWith("/transactions") ||
                       pathname.startsWith("/inventory") ||
+                      pathname.startsWith("/barbers") ||
+                      pathname.startsWith("/attendance") ||
                       pathname.startsWith("/salaries") ||
+                      pathname.startsWith("/cashflow") ||
                       pathname.startsWith("/settings")
 
   if (!session && !isPublicRoute) {

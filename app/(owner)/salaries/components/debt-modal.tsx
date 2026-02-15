@@ -6,6 +6,7 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { ZodError } from 'zod'
+import { logError } from '@/lib/logger'
 
 interface DebtModalProps {
   isOpen: boolean
@@ -45,7 +46,7 @@ export function DebtModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting debt:', error)
+      logError('DebtModal', 'Gagal submit hutang', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

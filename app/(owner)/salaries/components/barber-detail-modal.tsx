@@ -14,6 +14,7 @@ import { AdjustmentModal, AdjustmentFormData } from './adjustment-modal'
 import { PeriodModal, PeriodFormData } from './period-modal'
 import { paySalary, addSalaryDebt, addSalaryAdjustment, createSalaryPeriod } from '@/actions/salary-payments'
 import { ZodError } from 'zod'
+import { logError } from '@/lib/logger'
 
 interface BarberDetailModalProps {
   isOpen: boolean
@@ -57,7 +58,7 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error paying salary:', error)
+      logError('BarberDetailModal', 'Gagal membayar gaji', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -74,7 +75,7 @@ export function BarberDetailModal({
       await addSalaryDebt(data)
       onDataRefresh()
     } catch (error) {
-      console.error('Error adding debt:', error)
+      logError('BarberDetailModal', 'Gagal menambahkan hutang', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -98,7 +99,7 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error adding adjustment:', error)
+      logError('BarberDetailModal', 'Gagal menambahkan penyesuaian', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -120,7 +121,7 @@ export function BarberDetailModal({
       })
       onDataRefresh()
     } catch (error) {
-      console.error('Error creating period:', error)
+      logError('BarberDetailModal', 'Gagal membuat periode gaji', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getAttendances } from '@/actions/attendances'
 import { getBarbers } from '@/actions/barbers'
+import { logError } from '@/lib/logger'
 import { Calendar, Filter, Download, CheckCircle2, Clock, XCircle, AlertTriangle } from 'lucide-react'
 
 interface Attendance {
@@ -40,7 +41,7 @@ export default function AttendancePage() {
       setAttendances(attendanceData)
       setBarbers(barbersData)
     } catch (error) {
-      console.error('Error loading attendances:', error)
+      logError("Attendance", "Error loading attendances", error)
     } finally {
       setLoading(false)
     }
@@ -119,7 +120,7 @@ export default function AttendancePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.hadir}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Hadir</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Hadir</p>
             </div>
           </div>
         </div>
@@ -131,7 +132,7 @@ export default function AttendancePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.pulang}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Pulang</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Pulang</p>
             </div>
           </div>
         </div>
@@ -143,7 +144,7 @@ export default function AttendancePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.izin}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Izin</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Izin</p>
             </div>
           </div>
         </div>
@@ -155,7 +156,7 @@ export default function AttendancePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.sakit}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Sakit</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Sakit</p>
             </div>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function AttendancePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.libur}</p>
-              <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">Libur</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Libur</p>
             </div>
           </div>
         </div>
@@ -240,9 +241,9 @@ export default function AttendancePage() {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
-          <div className="p-4 sm:p-8 text-center text-gray-500 text-[10px] sm:text-sm">Memuat data...</div>
+          <div className="p-4 sm:p-8 text-center text-gray-500 text-xs sm:text-sm">Memuat data...</div>
         ) : filteredAttendances.length === 0 ? (
-          <div className="p-4 sm:p-8 text-center text-gray-500 text-[10px] sm:text-sm">
+          <div className="p-4 sm:p-8 text-center text-gray-500 text-xs sm:text-sm">
             Tidak ada data absensi untuk tanggal yang dipilih
           </div>
         ) : (
@@ -250,19 +251,19 @@ export default function AttendancePage() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
                     Capster
                   </th>
-                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
                     Tanggal
                   </th>
-                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
                     Jam Masuk
                   </th>
-                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
                     Jam Pulang
                   </th>
-                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-2 sm:px-6 py-1.5 sm:py-3 text-left text-xs sm:text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap">
                     Status
                   </th>
                 </tr>
@@ -271,12 +272,12 @@ export default function AttendancePage() {
                 {filteredAttendances.map((attendance) => (
                   <tr key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <div className="text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white truncate max-w-[80px] sm:max-w-none">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate max-w-[80px] sm:max-w-none">
                         {attendance.barber.name}
                       </div>
                     </td>
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <div className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {new Date(attendance.date).toLocaleDateString('id-ID', {
                           weekday: 'short',
                           year: 'numeric',
@@ -286,17 +287,17 @@ export default function AttendancePage() {
                       </div>
                     </td>
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <div className="text-[10px] sm:text-sm text-gray-900 dark:text-white">
+                      <div className="text-xs sm:text-sm text-gray-900 dark:text-white">
                         {attendance.checkIn || '-'}
                       </div>
                     </td>
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <div className="text-[10px] sm:text-sm text-gray-900 dark:text-white">
+                      <div className="text-xs sm:text-sm text-gray-900 dark:text-white">
                         {attendance.checkOut || '-'}
                       </div>
                     </td>
                     <td className="px-2 sm:px-6 py-1.5 sm:py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${getStatusColor(attendance.status)}`}>
+                      <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-xs font-medium ${getStatusColor(attendance.status)}`}>
                         <span className="mr-0.5 sm:mr-1">{getStatusIcon(attendance.status)}</span>
                         {attendance.status}
                       </span>

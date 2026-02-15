@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { AlertTriangle, RefreshCw, Home, Phone } from "lucide-react"
 import { useEffect } from "react"
+import { logError } from "@/lib/logger"
 
 export default function Error({
   error,
@@ -12,7 +13,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    logError("ErrorBoundary", "Unhandled error", error)
   }, [error])
 
   return (

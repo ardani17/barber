@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { logError } from "@/lib/logger"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -115,7 +116,7 @@ export default function SalariesPage() {
       setAdjustments(adjustmentsData)
       setCashAccounts(cashAccountsData)
     } catch (error) {
-      console.error('Error loading data:', error)
+      logError("Salaries", "Error loading data", error)
     } finally {
       setLoading(false)
     }
@@ -149,7 +150,7 @@ export default function SalariesPage() {
       setFormData({ barberId: '', name: '', startDate: '', endDate: '' })
       loadData()
     } catch (error) {
-      console.error('Error saving period:', error)
+      logError("Salaries", "Error saving period", error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)
@@ -189,7 +190,7 @@ export default function SalariesPage() {
       setPeriodToDelete(null)
       loadData()
     } catch (error) {
-      console.error('Error deleting period:', error)
+      logError("Salaries", "Error deleting period", error)
       alert(error instanceof Error ? error.message : 'Gagal menghapus periode gaji')
     }
   }
@@ -208,7 +209,7 @@ export default function SalariesPage() {
       }
       loadData()
     } catch (error) {
-      console.error('Error toggling active period:', error)
+      logError("Salaries", "Error toggling active period", error)
       alert(error instanceof Error ? error.message : 'Gagal mengubah status periode gaji')
     }
   }
@@ -242,7 +243,7 @@ export default function SalariesPage() {
       setPeriodSalaryDetail(detail)
       setPaymentModalOpen(true)
     } catch (error) {
-      console.error('Error loading salary detail:', error)
+      logError('Salaries', 'Gagal mengambil rincian gaji', error)
       alert(error instanceof Error ? error.message : 'Gagal mengambil rincian gaji')
     } finally {
       setLoadingDetail(false)
@@ -295,7 +296,7 @@ export default function SalariesPage() {
       setSelectedPaymentBarber(null)
       loadData()
     } catch (error) {
-      console.error('Error paying salary:', error)
+      logError("Salaries", "Error paying salary", error)
       alert(error instanceof Error ? error.message : 'Gagal membayar gaji')
     } finally {
       setPaying(false)
@@ -422,13 +423,13 @@ export default function SalariesPage() {
                       <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-0.5 sm:mb-1 truncate">
                         {period.name}
                       </h2>
-                      <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(period.startDate)} - {formatDate(period.endDate)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                       {period.isActive && (
-                        <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                           Aktif
                         </span>
                       )}
@@ -466,7 +467,7 @@ export default function SalariesPage() {
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 sm:p-4">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
                         <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
-                        <p className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-medium">Total Dibayar</p>
+                        <p className="text-xs sm:text-xs text-blue-600 dark:text-blue-400 font-medium">Total Dibayar</p>
                       </div>
                       <p className="text-xs sm:text-lg font-bold text-blue-900 dark:text-blue-100">
                         {formatCurrency(totals.totalPaid)}
@@ -476,7 +477,7 @@ export default function SalariesPage() {
                     <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 sm:p-4">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
                         <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
-                        <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 font-medium">Total Bonus</p>
+                        <p className="text-xs sm:text-xs text-green-600 dark:text-green-400 font-medium">Total Bonus</p>
                       </div>
                       <p className="text-xs sm:text-lg font-bold text-green-900 dark:text-green-100">
                         {formatCurrency(totals.totalBonus)}
@@ -486,7 +487,7 @@ export default function SalariesPage() {
                     <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 sm:p-4">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
                         <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 dark:text-red-400" />
-                        <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-medium">Total Hutang</p>
+                        <p className="text-xs sm:text-xs text-red-600 dark:text-red-400 font-medium">Total Hutang</p>
                       </div>
                       <p className="text-xs sm:text-lg font-bold text-red-900 dark:text-red-100">
                         {formatCurrency(totals.totalDebt)}
@@ -496,7 +497,7 @@ export default function SalariesPage() {
                     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 sm:p-4">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
                         <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400" />
-                        <p className="text-[10px] sm:text-xs text-purple-600 dark:text-purple-400 font-medium">Total Potongan</p>
+                        <p className="text-xs sm:text-xs text-purple-600 dark:text-purple-400 font-medium">Total Potongan</p>
                       </div>
                       <p className="text-xs sm:text-lg font-bold text-purple-900 dark:text-purple-100">
                         {formatCurrency(totals.totalDeduction)}
@@ -520,31 +521,31 @@ export default function SalariesPage() {
                             <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 shrink-0" />
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-[10px] sm:text-sm">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
                             <div>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Dibayar</p>
-                              <p className="font-medium text-blue-600 dark:text-blue-400 text-[10px] sm:text-sm">
+                              <p className="text-xs sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Dibayar</p>
+                              <p className="font-medium text-blue-600 dark:text-blue-400 text-xs sm:text-sm">
                                 {formatCurrency(summary.totalPaid)}
                               </p>
                             </div>
 
                             <div>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Bonus</p>
-                              <p className="font-medium text-green-600 dark:text-green-400 text-[10px] sm:text-sm">
+                              <p className="text-xs sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Bonus</p>
+                              <p className="font-medium text-green-600 dark:text-green-400 text-xs sm:text-sm">
                                 {formatCurrency(summary.totalBonus)}
                               </p>
                             </div>
 
                             <div>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Hutang</p>
-                              <p className="font-medium text-red-600 dark:text-red-400 text-[10px] sm:text-sm">
+                              <p className="text-xs sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Hutang</p>
+                              <p className="font-medium text-red-600 dark:text-red-400 text-xs sm:text-sm">
                                 {formatCurrency(summary.totalDebt)}
                               </p>
                             </div>
 
                             <div>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Potongan</p>
-                              <p className="font-medium text-purple-600 dark:text-purple-400 text-[10px] sm:text-sm">
+                              <p className="text-xs sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Potongan</p>
+                              <p className="font-medium text-purple-600 dark:text-purple-400 text-xs sm:text-sm">
                                 {formatCurrency(summary.totalDeduction)}
                               </p>
                             </div>
@@ -553,7 +554,7 @@ export default function SalariesPage() {
 
                         <div className="flex flex-row sm:flex-col items-start sm:items-end justify-between sm:gap-3 w-full sm:w-auto ml-0 sm:ml-6">
                           <div>
-                            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Gaji Bersih</p>
+                            <p className="text-xs sm:text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Gaji Bersih</p>
                             <p className="text-sm sm:text-xl font-bold text-gray-900 dark:text-white">
                               {formatCurrency(summary.netSalary)}
                             </p>
@@ -561,7 +562,7 @@ export default function SalariesPage() {
                           <Button
                             onClick={() => openPaymentModal(summary.barberId, summary.barberName, period)}
                             size="sm"
-                            className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm"
+                            className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm"
                           >
                             <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             <span className="hidden sm:inline">Bayar Gaji</span>
@@ -582,19 +583,19 @@ export default function SalariesPage() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-3 sm:pb-4">
             <DialogTitle className="text-base sm:text-lg">{editMode ? 'Edit Periode Gaji' : 'Buat Periode Gaji Baru'}</DialogTitle>
-            <DialogDescription className="text-[10px] sm:text-sm">
+            <DialogDescription className="text-xs sm:text-sm">
               {editMode ? 'Edit periode gaji untuk mengelola pembayaran capster' : 'Buat periode gaji untuk mengelola pembayaran capster'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <Label className="text-[10px] sm:text-xs">Pilih Capster *</Label>
+              <Label className="text-xs sm:text-xs">Pilih Capster *</Label>
               <select
                 value={formData.barberId}
                 onChange={(e) => setFormData({ ...formData, barberId: e.target.value })}
                 disabled={editMode}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-[10px] sm:text-sm"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-xs sm:text-sm"
               >
                 <option value="">Pilih capster...</option>
                 {barbers.filter(b => b.isActive).map(barber => {
@@ -609,37 +610,37 @@ export default function SalariesPage() {
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Nama Periode *</Label>
+              <Label className="text-xs sm:text-xs">Nama Periode *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Contoh: Gaji Januari 2025"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Tanggal Mulai *</Label>
+              <Label className="text-xs sm:text-xs">Tanggal Mulai *</Label>
               <Input
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Tanggal Akhir *</Label>
+              <Label className="text-xs sm:text-xs">Tanggal Akhir *</Label>
               <Input
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             {formData.barberId && (
-              <div className="text-[10px] sm:text-xs text-gray-600 bg-gray-50 p-2 sm:p-3 rounded-md">
+              <div className="text-xs sm:text-xs text-gray-600 bg-gray-50 p-2 sm:p-3 rounded-md">
                 {(() => {
                   const barber = barbers.find(b => b.id === formData.barberId)
                   if (!barber) return null
@@ -668,10 +669,10 @@ export default function SalariesPage() {
           </div>
 
           <DialogFooter className="pt-3 sm:pt-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               Batal
             </Button>
-            <Button onClick={handleSubmitPeriod} disabled={submitting} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button onClick={handleSubmitPeriod} disabled={submitting} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               {submitting ? (editMode ? 'Menyimpan...' : 'Membuat...') : (editMode ? 'Simpan Perubahan' : 'Buat Periode')}
             </Button>
           </DialogFooter>
@@ -682,48 +683,48 @@ export default function SalariesPage() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-3 sm:pb-4">
             <DialogTitle className="text-base sm:text-lg">Bayar Gaji - {selectedPaymentBarber?.name}</DialogTitle>
-            <DialogDescription className="text-[10px] sm:text-sm">
+            <DialogDescription className="text-xs sm:text-sm">
               {formatDate(paymentFormData.periodStart)} - {formatDate(paymentFormData.periodEnd)}
             </DialogDescription>
           </DialogHeader>
 
           {loadingDetail ? (
             <div className="text-center py-6 sm:py-8">
-              <p className="text-[10px] sm:text-sm text-gray-500">Memuat rincian gaji...</p>
+              <p className="text-xs sm:text-sm text-gray-500">Memuat rincian gaji...</p>
             </div>
           ) : periodSalaryDetail ? (
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 sm:p-4 space-y-2 sm:space-y-3 mb-3 sm:mb-4">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400">Gaji Pokok:</span>
-                <span className="text-[10px] sm:text-sm font-semibold text-gray-900 dark:text-white">
+                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Gaji Pokok:</span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
                   {formatCurrency(periodSalaryDetail.baseSalary)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400">Komisi ({periodSalaryDetail.transactionCount} transaksi):</span>
-                <span className="text-[10px] sm:text-sm font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Komisi ({periodSalaryDetail.transactionCount} transaksi):</span>
+                <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400">
                   {formatCurrency(periodSalaryDetail.commissionAmount)}
                 </span>
               </div>
               {periodSalaryDetail.bonusAmount !== '0' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400">Bonus:</span>
-                  <span className="text-[10px] sm:text-sm font-semibold text-green-600 dark:text-green-400">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Bonus:</span>
+                  <span className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400">
                     +{formatCurrency(periodSalaryDetail.bonusAmount)}
                   </span>
                 </div>
               )}
               {periodSalaryDetail.deductionAmount !== '0' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] sm:text-sm text-gray-600 dark:text-gray-400">Potongan:</span>
-                  <span className="text-[10px] sm:text-sm font-semibold text-red-600 dark:text-red-400">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Potongan:</span>
+                  <span className="text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400">
                     -{formatCurrency(periodSalaryDetail.deductionAmount)}
                   </span>
                 </div>
               )}
               <div className="border-t border-gray-300 dark:border-gray-600 pt-2 sm:pt-3 mt-2 sm:mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] sm:text-base font-semibold text-gray-900 dark:text-white">Total yang harus dibayar:</span>
+                  <span className="text-xs sm:text-base font-semibold text-gray-900 dark:text-white">Total yang harus dibayar:</span>
                   <span className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400">
                     {formatCurrency(periodSalaryDetail.totalShouldPay)}
                   </span>
@@ -732,30 +733,30 @@ export default function SalariesPage() {
             </div>
           ) : (
             <div className="text-center py-6 sm:py-8">
-              <p className="text-[10px] sm:text-sm text-gray-500">Gagal memuat rincian gaji</p>
+              <p className="text-xs sm:text-sm text-gray-500">Gagal memuat rincian gaji</p>
             </div>
           )}
 
           <div className="space-y-2 sm:space-y-4">
             <div>
-              <Label className="text-[10px] sm:text-xs">Jumlah Tunai</Label>
+              <Label className="text-xs sm:text-xs">Jumlah Tunai</Label>
               <Input
                 type="number"
                 value={paymentFormData.tunaiAmount}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, tunaiAmount: e.target.value })}
                 placeholder="0"
                 min="0"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             {paymentFormData.tunaiAmount && parseFloat(paymentFormData.tunaiAmount) > 0 && (
               <div>
-                <Label className="text-[10px] sm:text-xs">Akun Tunai *</Label>
+                <Label className="text-xs sm:text-xs">Akun Tunai *</Label>
                 <select
                   value={paymentFormData.tunaiAccountId}
                   onChange={(e) => setPaymentFormData({ ...paymentFormData, tunaiAccountId: e.target.value })}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-[10px] sm:text-sm"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                 >
                   <option value="">Pilih akun tunai...</option>
                   {cashAccounts.filter(a => a.type === 'TUNAI').map(account => (
@@ -768,24 +769,24 @@ export default function SalariesPage() {
             )}
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Jumlah Bank</Label>
+              <Label className="text-xs sm:text-xs">Jumlah Bank</Label>
               <Input
                 type="number"
                 value={paymentFormData.bankAmount}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, bankAmount: e.target.value })}
                 placeholder="0"
                 min="0"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             {paymentFormData.bankAmount && parseFloat(paymentFormData.bankAmount) > 0 && (
               <div>
-                <Label className="text-[10px] sm:text-xs">Akun Bank *</Label>
+                <Label className="text-xs sm:text-xs">Akun Bank *</Label>
                 <select
                   value={paymentFormData.bankAccountId}
                   onChange={(e) => setPaymentFormData({ ...paymentFormData, bankAccountId: e.target.value })}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-[10px] sm:text-sm"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                 >
                   <option value="">Pilih akun bank...</option>
                   {cashAccounts.filter(a => a.type === 'BANK').map(account => (
@@ -798,24 +799,24 @@ export default function SalariesPage() {
             )}
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Jumlah QRIS</Label>
+              <Label className="text-xs sm:text-xs">Jumlah QRIS</Label>
               <Input
                 type="number"
                 value={paymentFormData.qrisAmount}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, qrisAmount: e.target.value })}
                 placeholder="0"
                 min="0"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             {paymentFormData.qrisAmount && parseFloat(paymentFormData.qrisAmount) > 0 && (
               <div>
-                <Label className="text-[10px] sm:text-xs">Akun QRIS *</Label>
+                <Label className="text-xs sm:text-xs">Akun QRIS *</Label>
                 <select
                   value={paymentFormData.qrisAccountId}
                   onChange={(e) => setPaymentFormData({ ...paymentFormData, qrisAccountId: e.target.value })}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-[10px] sm:text-sm"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                 >
                   <option value="">Pilih akun QRIS...</option>
                   {cashAccounts.filter(a => a.type === 'QRIS').map(account => (
@@ -828,36 +829,36 @@ export default function SalariesPage() {
             )}
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Bonus</Label>
+              <Label className="text-xs sm:text-xs">Bonus</Label>
               <Input
                 type="number"
                 value={paymentFormData.bonusAmount}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, bonusAmount: e.target.value })}
                 placeholder="0"
                 min="0"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Potongan</Label>
+              <Label className="text-xs sm:text-xs">Potongan</Label>
               <Input
                 type="number"
                 value={paymentFormData.deductionAmount}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, deductionAmount: e.target.value })}
                 placeholder="0"
                 min="0"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
             <div>
-              <Label className="text-[10px] sm:text-xs">Catatan</Label>
+              <Label className="text-xs sm:text-xs">Catatan</Label>
               <Input
                 value={paymentFormData.notes}
                 onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}
                 placeholder="Catatan pembayaran (opsional)"
-                className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               />
             </div>
 
@@ -874,26 +875,26 @@ export default function SalariesPage() {
                   <div className="space-y-1.5 sm:space-y-2">
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-2 sm:p-4 rounded-lg">
                       <div className="flex justify-between items-center mb-0.5 sm:mb-1">
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tunai:</span>
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tunai:</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                           {formatCurrency(tunaiAmount)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center mb-0.5 sm:mb-1">
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-700 dark:text-gray-300">Bank:</span>
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Bank:</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                           {formatCurrency(bankAmount)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center mb-0.5 sm:mb-1">
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-700 dark:text-gray-300">QRIS:</span>
-                        <span className="text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">QRIS:</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                           {formatCurrency(qrisAmount)}
                         </span>
                       </div>
                       <div className="border-t border-gray-300 dark:border-gray-600 pt-1.5 sm:pt-2 mt-1.5 sm:mt-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] sm:text-sm font-medium text-gray-700 dark:text-gray-300">Total Pembayaran:</span>
+                          <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Total Pembayaran:</span>
                           <span className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400">
                             {formatCurrency(totalPayment)}
                           </span>
@@ -903,14 +904,14 @@ export default function SalariesPage() {
                     {(bonusAmount > 0 || deductionAmount > 0) && (
                       <div className="bg-purple-50 dark:bg-purple-900/20 p-2 sm:p-4 rounded-lg">
                         <div className="flex justify-between items-center mb-0.5 sm:mb-1">
-                          <span className="text-[10px] sm:text-sm text-gray-700 dark:text-gray-300">Bonus:</span>
-                          <span className="text-[10px] sm:text-sm font-medium text-green-600 dark:text-green-400">
+                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Bonus:</span>
+                          <span className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400">
                             +{formatCurrency(bonusAmount)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] sm:text-sm text-gray-700 dark:text-gray-300">Potongan:</span>
-                          <span className="text-[10px] sm:text-sm font-medium text-red-600 dark:text-red-400">
+                          <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Potongan:</span>
+                          <span className="text-xs sm:text-sm font-medium text-red-600 dark:text-red-400">
                             -{formatCurrency(deductionAmount)}
                           </span>
                         </div>
@@ -924,10 +925,10 @@ export default function SalariesPage() {
           </div>
 
           <DialogFooter className="pt-3 sm:pt-4">
-            <Button variant="outline" onClick={() => setPaymentModalOpen(false)} disabled={paying} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button variant="outline" onClick={() => setPaymentModalOpen(false)} disabled={paying} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               Batal
             </Button>
-            <Button onClick={handleSubmitPayment} disabled={paying || (!paymentFormData.tunaiAmount && !paymentFormData.bankAmount && !paymentFormData.qrisAmount)} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button onClick={handleSubmitPayment} disabled={paying || (!paymentFormData.tunaiAmount && !paymentFormData.bankAmount && !paymentFormData.qrisAmount)} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               {paying ? 'Memproses...' : 'Bayar Gaji'}
             </Button>
           </DialogFooter>
@@ -938,16 +939,16 @@ export default function SalariesPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg">Hapus Periode Gaji</DialogTitle>
-            <DialogDescription className="text-[10px] sm:text-sm">
+            <DialogDescription className="text-xs sm:text-sm">
               Apakah Anda yakin ingin menghapus periode gaji ini? Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter>
-            <Button variant="outline" onClick={cancelDeletePeriod} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button variant="outline" onClick={cancelDeletePeriod} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               Batal
             </Button>
-            <Button variant="destructive" onClick={confirmDeletePeriod} className="h-8 sm:h-auto px-2 sm:px-4 text-[10px] sm:text-sm">
+            <Button variant="destructive" onClick={confirmDeletePeriod} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               Hapus
             </Button>
           </DialogFooter>

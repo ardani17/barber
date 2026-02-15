@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
-import { ToasterProvider } from "@/components/toaster-provider"
 
 export default async function OwnerLayout({
   children
@@ -45,7 +44,6 @@ export default async function OwnerLayout({
           {children}
         </div>
       </main>
-      <ToasterProvider />
     </div>
   )
 }

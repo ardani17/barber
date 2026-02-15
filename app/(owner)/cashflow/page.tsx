@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -160,7 +161,7 @@ export default function CashflowPage() {
       setTransactions(transactionsData)
       setSummary(summaryData)
     } catch (error) {
-      console.error("Error loading data:", error)
+      logError("Cashflow", "Error loading data", error)
     } finally {
       setLoading(false)
     }
@@ -217,7 +218,7 @@ export default function CashflowPage() {
       setEditingAccount(null)
       loadData()
     } catch (error) {
-      console.error("Error saving account:", error)
+      logError("Cashflow", "Gagal menyimpan akun", error)
       alert("Gagal menyimpan akun")
     }
   }
@@ -229,7 +230,7 @@ export default function CashflowPage() {
         alert("Akun berhasil dihapus")
         loadData()
       } catch (error) {
-        console.error("Error deleting account:", error)
+        logError("Cashflow", "Gagal menghapus akun", error)
         alert("Gagal menghapus akun")
       }
     }
@@ -240,7 +241,7 @@ export default function CashflowPage() {
       await toggleCashAccountActive(accountId)
       loadData()
     } catch (error) {
-      console.error("Error toggling account:", error)
+      logError("Cashflow", "Gagal mengubah status akun", error)
       alert("Gagal mengubah status akun")
     }
   }
@@ -251,7 +252,7 @@ export default function CashflowPage() {
       alert("Akun default berhasil diubah")
       loadData()
     } catch (error) {
-      console.error("Error setting default account:", error)
+      logError("Cashflow", "Gagal mengubah akun default", error)
       alert("Gagal mengubah akun default")
     }
   }
@@ -284,7 +285,7 @@ export default function CashflowPage() {
       alert("Transaksi berhasil")
       loadData()
     } catch (error) {
-      console.error("Error creating transaction:", error)
+      logError("Cashflow", "Gagal membuat transaksi", error)
       alert("Gagal membuat transaksi")
     }
   }
@@ -322,7 +323,7 @@ export default function CashflowPage() {
       alert("Transfer berhasil")
       loadData()
     } catch (error) {
-      console.error("Error creating transfer:", error)
+      logError("Cashflow", "Gagal membuat transfer", error)
       alert("Gagal membuat transfer")
     }
   }
@@ -338,7 +339,7 @@ export default function CashflowPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3 h-8 sm:h-10 text-[10px] sm:text-xs">
+          <TabsList className="grid w-full max-w-lg grid-cols-3 h-8 sm:h-10 text-xs sm:text-xs">
             <TabsTrigger value="overview">Ringkasan</TabsTrigger>
             <TabsTrigger value="accounts">Akun Kas</TabsTrigger>
             <TabsTrigger value="transactions">Transaksi</TabsTrigger>
@@ -348,7 +349,7 @@ export default function CashflowPage() {
             <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="shadow-sm">
                 <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground">Total Saldo</CardTitle>
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Saldo</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -358,7 +359,7 @@ export default function CashflowPage() {
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold">
                         {formatCurrency(totalBalance)}
                       </div>
-                      <div className="flex items-center text-[10px] sm:text-xs text-green-600 mt-1 sm:mt-2">
+                      <div className="flex items-center text-xs sm:text-xs text-green-600 mt-1 sm:mt-2">
                         <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                         <span>Saldo total semua akun</span>
                       </div>
@@ -369,7 +370,7 @@ export default function CashflowPage() {
 
               <Card className="shadow-sm">
                 <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground">Saldo Kas</CardTitle>
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Saldo Kas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -379,7 +380,7 @@ export default function CashflowPage() {
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">
                         {summary ? formatCurrency(summary.cashBalance) : formatCurrency(0)}
                       </div>
-                      <div className="flex items-center text-[10px] sm:text-xs text-green-600 mt-1 sm:mt-2">
+                      <div className="flex items-center text-xs sm:text-xs text-green-600 mt-1 sm:mt-2">
                         <Banknote className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                         <span>Akun Tunai</span>
                       </div>
@@ -390,7 +391,7 @@ export default function CashflowPage() {
 
               <Card className="shadow-sm">
                 <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground">Saldo Bank</CardTitle>
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Saldo Bank</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -400,7 +401,7 @@ export default function CashflowPage() {
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">
                         {summary ? formatCurrency(summary.bankBalance) : formatCurrency(0)}
                       </div>
-                      <div className="flex items-center text-[10px] sm:text-xs text-blue-600 mt-1 sm:mt-2">
+                      <div className="flex items-center text-xs sm:text-xs text-blue-600 mt-1 sm:mt-2">
                         <Building2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                         <span>Akun Bank</span>
                       </div>
@@ -411,7 +412,7 @@ export default function CashflowPage() {
 
               <Card className="shadow-sm">
                 <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground">Saldo QRIS</CardTitle>
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Saldo QRIS</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -421,7 +422,7 @@ export default function CashflowPage() {
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600">
                         {summary ? formatCurrency(summary.qrisBalance) : formatCurrency(0)}
                       </div>
-                      <div className="flex items-center text-[10px] sm:text-xs text-purple-600 mt-1 sm:mt-2">
+                      <div className="flex items-center text-xs sm:text-xs text-purple-600 mt-1 sm:mt-2">
                         <Smartphone className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                         <span>Akun QRIS</span>
                       </div>
@@ -454,7 +455,7 @@ export default function CashflowPage() {
                               </div>
                               <div>
                                 <div className="font-medium text-xs sm:text-sm">{account.name}</div>
-                                <div className="text-[10px] sm:text-xs text-muted-foreground">
+                                <div className="text-xs sm:text-xs text-muted-foreground">
                                   {account.type}
                                   {account.accountNumber && ` - ${account.accountNumber}`}
                                 </div>
@@ -521,14 +522,14 @@ export default function CashflowPage() {
                               </div>
                               <div>
                                 <div className="font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-[200px]">{transaction.description}</div>
-                                <div className="text-[10px] sm:text-xs text-muted-foreground">
+                                <div className="text-xs sm:text-xs text-muted-foreground">
                                   {transaction.source === "CASH_TRANSACTION" && transaction.accountName && `${transaction.accountName} • ${transaction.type}`}
                                   {transaction.source === "EXPENSE" && `Pengeluaran • ${transaction.type}`}
                                   {transaction.source === "POS_TRANSACTION" && `POS • ${transaction.type}`}
                                 </div>
                               </div>
                             </div>
-                            <div className={`font-bold text-[10px] sm:text-xs ${isIncome ? "text-green-600" : "text-red-600"}`}>
+                            <div className={`font-bold text-xs sm:text-xs ${isIncome ? "text-green-600" : "text-red-600"}`}>
                               {isIncome ? "+" : "-"}
                               {formatCurrency(parseFloat(transaction.amount))}
                             </div>
@@ -565,18 +566,19 @@ export default function CashflowPage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-sm">
-                <CardContent className="p-0 overflow-x-auto">
-                  <Table>
+              <>
+                <Card className="shadow-sm hidden sm:block">
+                  <CardContent className="p-0 overflow-x-auto">
+                    <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-[10px] sm:text-xs">Nama</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs">Tipe</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs hidden sm:table-cell">Nomor</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs">Saldo</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs hidden sm:table-cell">Status</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs hidden sm:table-cell">Default</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-right">Aksi</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Nama</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Tipe</TableHead>
+                        <TableHead className="text-xs sm:text-xs hidden sm:table-cell">Nomor</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Saldo</TableHead>
+                        <TableHead className="text-xs sm:text-xs hidden sm:table-cell">Status</TableHead>
+                        <TableHead className="text-xs sm:text-xs hidden sm:table-cell">Default</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-right">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -593,22 +595,22 @@ export default function CashflowPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">{account.type}</Badge>
+                              <Badge variant="outline" className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">{account.type}</Badge>
                             </TableCell>
-                            <TableCell className="text-muted-foreground text-[10px] sm:text-xs hidden sm:table-cell">
+                            <TableCell className="text-muted-foreground text-xs sm:text-xs hidden sm:table-cell">
                               {account.accountNumber || "-"}
                             </TableCell>
-                            <TableCell className="font-bold text-[10px] sm:text-xs">
+                            <TableCell className="font-bold text-xs sm:text-xs">
                               {formatCurrency(parseFloat(account.balance))}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
-                              <Badge variant={account.isActive ? "default" : "secondary"} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
+                              <Badge variant={account.isActive ? "default" : "secondary"} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
                                 {account.isActive ? "Aktif" : "Nonaktif"}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
                               {account.isDefault ? (
-                                <Badge variant="default" className="bg-yellow-500 text-black text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
+                                <Badge variant="default" className="bg-yellow-500 text-black text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
                                   Default
                                 </Badge>
                               ) : (
@@ -616,7 +618,7 @@ export default function CashflowPage() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => handleSetDefaultAccount(account.id)}
-                                  className="text-[10px] sm:text-xs h-6 sm:h-auto px-1 sm:px-2 py-0 sm:py-auto"
+                                  className="text-xs sm:text-xs h-6 sm:h-auto px-1 sm:px-2 py-0 sm:py-auto"
                                 >
                                   Set Default
                                 </Button>
@@ -628,7 +630,7 @@ export default function CashflowPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => openEditAccountModal(account)}
-                                  className="h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2"
+                                  className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2"
                                 >
                                   <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
@@ -636,7 +638,7 @@ export default function CashflowPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleToggleActive(account.id)}
-                                  className="h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2 text-[10px] sm:text-xs"
+                                  className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2 text-xs sm:text-xs"
                                 >
                                   {account.isActive ? "Nonaktif" : "Aktif"}
                                 </Button>
@@ -644,7 +646,7 @@ export default function CashflowPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleDeleteAccount(account.id)}
-                                  className="h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-6 w-6 sm:h-auto sm:w-auto p-0 sm:p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
@@ -657,6 +659,39 @@ export default function CashflowPage() {
                   </Table>
                 </CardContent>
               </Card>
+              <div className="grid gap-3 sm:hidden">
+                {accounts.map((account) => {
+                  const Icon = accountTypeIcons[account.type].icon
+                  return (
+                    <div key={account.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-lg ${accountTypeIcons[account.type].color}`}>
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="font-medium text-xs truncate max-w-[120px]">{account.name}</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5">{account.type}</Badge>
+                      </div>
+                      <div className="text-sm font-bold mb-2">{formatCurrency(parseFloat(account.balance))}</div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant={account.isActive ? "default" : "secondary"} className={account.isActive ? "bg-green-500 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                          {account.isActive ? "Aktif" : "Nonaktif"}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button variant="outline" size="sm" onClick={() => openEditAccountModal(account)} className="h-8 w-8 p-0">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteAccount(account.id)} className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
             )}
           </TabsContent>
 
@@ -689,16 +724,17 @@ export default function CashflowPage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-sm">
-                <CardContent className="p-0 overflow-x-auto">
-                  <Table>
+              <>
+                <Card className="shadow-sm hidden sm:block">
+                  <CardContent className="p-0 overflow-x-auto">
+                    <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-[10px] sm:text-xs">Tanggal</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs">Sumber</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs hidden sm:table-cell">Tipe</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs">Deskripsi</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs">Jumlah</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Tanggal</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Sumber</TableHead>
+                        <TableHead className="text-xs sm:text-xs hidden sm:table-cell">Tipe</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Deskripsi</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Jumlah</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -712,7 +748,7 @@ export default function CashflowPage() {
 
                         return (
                           <TableRow key={transaction.id}>
-                            <TableCell className="text-muted-foreground text-[10px] sm:text-xs">
+                            <TableCell className="text-muted-foreground text-xs sm:text-xs">
                               {new Date(transaction.date).toLocaleDateString("id-ID", {
                                 day: "2-digit",
                                 month: "short",
@@ -720,20 +756,20 @@ export default function CashflowPage() {
                               })}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">{sourceLabel}</Badge>
+                              <Badge variant="outline" className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">{sourceLabel}</Badge>
                               {transaction.accountName && (
-                                <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+                                <div className="text-xs sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                                   {transaction.accountName}
                                 </div>
                               )}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
-                              <Badge variant={isIncome ? "default" : "destructive"} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
+                              <Badge variant={isIncome ? "default" : "destructive"} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
                                 {transaction.source === "CASH_TRANSACTION" ? transaction.type : transaction.source === "EXPENSE" ? transaction.type : transaction.type}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-[10px] sm:text-xs truncate max-w-[100px] sm:max-w-[200px]">{transaction.description}</TableCell>
-                            <TableCell className={`font-bold text-[10px] sm:text-xs ${isIncome ? "text-green-600" : "text-red-600"}`}>
+                            <TableCell className="text-xs sm:text-xs truncate max-w-[100px] sm:max-w-[200px]">{transaction.description}</TableCell>
+                            <TableCell className={`font-bold text-xs sm:text-xs ${isIncome ? "text-green-600" : "text-red-600"}`}>
                               {isIncome ? "+" : "-"}
                               {formatCurrency(parseFloat(transaction.amount))}
                             </TableCell>
@@ -744,6 +780,33 @@ export default function CashflowPage() {
                   </Table>
                 </CardContent>
               </Card>
+              <div className="grid gap-3 sm:hidden">
+                {transactions.map((transaction) => {
+                  const isIncome = transaction.isIncome
+                  const sourceLabel = {
+                    CASH_TRANSACTION: "Kas",
+                    EXPENSE: "Pengeluaran",
+                    POS_TRANSACTION: "POS"
+                  }[transaction.source]
+                  return (
+                    <div key={transaction.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(transaction.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                          </p>
+                          <p className="text-xs font-medium mt-1 truncate max-w-[180px]">{transaction.description}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5">{sourceLabel}</Badge>
+                      </div>
+                      <div className={`text-sm font-bold ${isIncome ? "text-green-600" : "text-red-600"}`}>
+                        {isIncome ? "+" : "-"}{formatCurrency(parseFloat(transaction.amount))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
             )}
           </TabsContent>
         </Tabs>

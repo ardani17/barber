@@ -1,7 +1,7 @@
 "use client"
 
-import { Toaster } from "@/hooks/use-toast"
+import { ToastProvider } from "@/hooks/use-toast"
 
-export function ToasterProvider() {
-  return <Toaster />
+export function ToasterProvider({ children }: { children: React.ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>
 }

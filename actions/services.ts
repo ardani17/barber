@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
+import { logError } from "@/lib/logger"
 
 const createServiceSchema = z.object({
   name: z.string().min(1, "Nama layanan harus diisi"),
@@ -35,7 +36,7 @@ export async function createService(params: z.infer<typeof createServiceSchema>)
 
     return service
   } catch (error) {
-    console.error("Error creating service:", error)
+    logError("Services", "Error creating service", error)
     throw new Error("Gagal membuat layanan")
   }
 }
@@ -60,7 +61,7 @@ export async function updateService(params: z.infer<typeof updateServiceSchema>)
 
     return service
   } catch (error) {
-    console.error("Error updating service:", error)
+    logError("Services", "Error updating service", error)
     throw new Error("Gagal mengupdate layanan")
   }
 }
@@ -90,7 +91,7 @@ export async function toggleServiceActive(id: string) {
 
     return updatedService
   } catch (error) {
-    console.error("Error toggling service active:", error)
+    logError("Services", "Error toggling service active", error)
     throw new Error("Gagal mengubah status layanan")
   }
 }
@@ -116,7 +117,7 @@ export async function getServices() {
       isActive: service.isActive
     }))
   } catch (error) {
-    console.error("Error fetching services:", error)
+    logError("Services", "Gagal mengambil data layanan", error)
     throw new Error("Gagal mengambil data layanan")
   }
 }
@@ -144,7 +145,7 @@ export async function getServiceById(id: string) {
       isActive: service.isActive
     }
   } catch (error) {
-    console.error("Error fetching service:", error)
+    logError("Services", "Error fetching service", error)
     throw new Error("Gagal mengambil data layanan")
   }
 }

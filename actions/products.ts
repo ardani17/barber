@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
+import { logError } from "@/lib/logger"
 
 const createProductSchema = z.object({
   name: z.string().min(1, "Nama produk harus diisi"),
@@ -46,7 +47,7 @@ export async function createProduct(params: z.infer<typeof createProductSchema>)
 
     return product
   } catch (error) {
-    console.error("Error creating product:", error)
+    logError("Products", "Error creating product", error)
     throw new Error("Gagal membuat produk")
   }
 }
@@ -72,7 +73,7 @@ export async function updateProduct(params: z.infer<typeof updateProductSchema>)
 
     return product
   } catch (error) {
-    console.error("Error updating product:", error)
+    logError("Products", "Error updating product", error)
     throw new Error("Gagal mengupdate produk")
   }
 }
@@ -116,7 +117,7 @@ export async function adjustProductStock(params: z.infer<typeof adjustStockSchem
       newStock
     }
   } catch (error) {
-    console.error("Error adjusting product stock:", error)
+    logError("Products", "Error adjusting product stock", error)
     throw new Error("Gagal menyesuaikan stock produk")
   }
 }
@@ -146,7 +147,7 @@ export async function toggleProductActive(id: string) {
 
     return updatedProduct
   } catch (error) {
-    console.error("Error toggling product active:", error)
+    logError("Products", "Error toggling product active", error)
     throw new Error("Gagal mengubah status produk")
   }
 }
@@ -180,7 +181,7 @@ export async function getProducts() {
       isLowStock: product.stock <= 5
     }))
   } catch (error) {
-    console.error("Error fetching products:", error)
+    logError("Products", "Gagal mengambil data produk", error)
     throw new Error("Gagal mengambil data produk")
   }
 }
@@ -210,7 +211,7 @@ export async function getProductById(id: string) {
       isActive: product.isActive
     }
   } catch (error) {
-    console.error("Error fetching product:", error)
+    logError("Products", "Error fetching product", error)
     throw new Error("Gagal mengambil data produk")
   }
 }

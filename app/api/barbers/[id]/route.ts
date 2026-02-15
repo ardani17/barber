@@ -4,6 +4,7 @@ import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import Decimal from "decimal.js"
+import { logError } from "@/lib/logger"
 
 const updateBarberSchema = z.object({
   name: z.string().min(1).optional(),
@@ -39,7 +40,7 @@ export async function PATCH(
       isActive: barber.isActive
     })
   } catch (error) {
-    console.error("Error updating barber:", error)
+    logError('API', 'Gagal update barber status (PATCH)', error)
     return NextResponse.json(
       { error: "Gagal mengupdate barber" },
       { status: 500 }
@@ -84,7 +85,7 @@ export async function PUT(
       isActive: barber.isActive
     })
   } catch (error) {
-    console.error("Error updating barber:", error)
+    logError('API', 'Gagal update barber (PUT)', error)
     return NextResponse.json(
       { error: "Gagal mengupdate barber" },
       { status: 500 }
@@ -107,7 +108,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting barber:", error)
+    logError('API', 'Gagal hapus barber (DELETE)', error)
     return NextResponse.json(
       { error: "Gagal menghapus barber" },
       { status: 500 }

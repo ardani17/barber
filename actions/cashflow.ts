@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { revalidatePath } from "next/cache"
+import { logError } from "@/lib/logger"
 
 const createAccountSchema = z.object({
   name: z.string().min(1, "Nama akun harus diisi"),
@@ -87,7 +88,7 @@ export async function createCashAccount(params: z.infer<typeof createAccountSche
       isDefault: account.isDefault
     }
   } catch (error) {
-    console.error("Error creating cash account:", error)
+    logError("Cashflow", "Gagal membuat akun kas", error)
     throw new Error("Gagal membuat akun kas")
   }
 }
@@ -123,7 +124,7 @@ export async function updateCashAccount(params: z.infer<typeof updateAccountSche
       isDefault: account.isDefault
     }
   } catch (error) {
-    console.error("Error updating cash account:", error)
+    logError("Cashflow", "Gagal mengupdate akun kas", error)
     throw new Error("Gagal mengupdate akun kas")
   }
 }
@@ -163,7 +164,7 @@ export async function deleteCashAccount(id: string) {
       message: "Akun kas berhasil dihapus. Historical transaksi tetap aman."
     }
   } catch (error) {
-    console.error("Error deleting cash account:", error)
+    logError("Cashflow", "Gagal menghapus akun kas", error)
     throw new Error(error instanceof Error ? error.message : "Gagal menghapus akun kas")
   }
 }
@@ -203,7 +204,7 @@ export async function toggleCashAccountActive(id: string) {
       isDefault: updatedAccount.isDefault
     }
   } catch (error) {
-    console.error("Error toggling cash account active:", error)
+    logError("Cashflow", "Gagal mengubah status akun kas", error)
     throw new Error("Gagal mengubah status akun kas")
   }
 }
@@ -233,7 +234,7 @@ export async function getCashAccounts() {
       isDefault: account.isDefault
     }))
   } catch (error) {
-    console.error("Error fetching cash accounts:", error)
+    logError("Cashflow", "Gagal mengambil data akun kas", error)
     throw new Error("Gagal mengambil data akun kas")
   }
 }
@@ -276,7 +277,7 @@ export async function setDefaultAccount(id: string) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error setting default account:", error)
+    logError("Cashflow", "Gagal mengatur akun default", error)
     throw new Error("Gagal mengatur akun default")
   }
 }
@@ -311,7 +312,7 @@ export async function getDefaultAccountByType(type: "TUNAI" | "QRIS" | "BANK") {
       isDefault: account.isDefault
     }
   } catch (error) {
-    console.error("Error fetching default account:", error)
+    logError("Cashflow", "Gagal mengambil akun default", error)
     throw new Error("Gagal mengambil akun default")
   }
 }
@@ -362,7 +363,7 @@ export async function createDefaultAccountIfNeeded(type: "TUNAI" | "QRIS" | "BAN
 
     return account
   } catch (error) {
-    console.error("Error creating default account if needed:", error)
+    logError("Cashflow", "Gagal membuat akun default", error)
     throw new Error("Gagal membuat akun default")
   }
 }
@@ -410,7 +411,7 @@ export async function getCashAccountById(id: string) {
       }))
     }
   } catch (error) {
-    console.error("Error fetching cash account:", error)
+    logError("Cashflow", "Gagal mengambil data akun kas", error)
     throw new Error("Gagal mengambil data akun kas")
   }
 }
@@ -472,7 +473,7 @@ export async function createTransaction(params: z.infer<typeof transactionSchema
       toAccountId: transaction.toAccountId
     }
   } catch (error) {
-    console.error("Error creating transaction:", error)
+    logError("Cashflow", "Gagal membuat transaksi", error)
     throw new Error(error instanceof Error ? error.message : "Gagal membuat transaksi")
   }
 }
@@ -538,7 +539,7 @@ export async function createTransfer(params: z.infer<typeof transferSchema>) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error creating transfer:", error)
+    logError("Cashflow", "Gagal melakukan transfer", error)
     throw new Error(error instanceof Error ? error.message : "Gagal melakukan transfer")
   }
 }
@@ -580,7 +581,7 @@ export async function getCashTransactions(accountId?: string, limit: number = 50
       date: transaction.date.toISOString()
     }))
   } catch (error) {
-    console.error("Error fetching cash transactions:", error)
+    logError("Cashflow", "Gagal mengambil data transaksi", error)
     throw new Error("Gagal mengambil data transaksi")
   }
 }
@@ -635,7 +636,7 @@ export async function getCashflowSummary() {
       qrisBalance: qrisBalance.toString()
     }
   } catch (error) {
-    console.error("Error fetching cashflow summary:", error)
+    logError("Cashflow", "Gagal mengambil ringkasan cashflow", error)
     throw new Error("Gagal mengambil ringkasan cashflow")
   }
 }
@@ -729,7 +730,7 @@ export async function getAllTransactions(limit: number = 50) {
 
     return allTransactions.slice(0, limit)
   } catch (error) {
-    console.error("Error fetching all transactions:", error)
+    logError("Cashflow", "Gagal mengambil data transaksi", error)
     throw new Error("Gagal mengambil data transaksi")
   }
 }

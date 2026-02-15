@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { revalidatePath } from "next/cache"
+import { logError } from "@/lib/logger"
 
 const createExpenseSchema = z.object({
   title: z.string().min(1, "Judul harus diisi"),
@@ -84,7 +85,7 @@ export async function createExpense(params: z.infer<typeof createExpenseSchema>)
       accountId: expense.accountId
     }
   } catch (error) {
-    console.error("Error creating expense:", error)
+    logError("Expenses", "Error creating expense", error)
     throw new Error("Gagal membuat pengeluaran")
   }
 }
@@ -126,7 +127,7 @@ export async function updateExpense(params: z.infer<typeof updateExpenseSchema>)
       accountId: expense.accountId
     }
   } catch (error) {
-    console.error("Error updating expense:", error)
+    logError("Expenses", "Error updating expense", error)
     throw new Error("Gagal mengupdate pengeluaran")
   }
 }
@@ -147,7 +148,7 @@ export async function deleteExpense(id: string) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error deleting expense:", error)
+    logError("Expenses", "Gagal menghapus pengeluaran", error)
     throw new Error("Gagal menghapus pengeluaran")
   }
 }
@@ -236,7 +237,7 @@ export async function getExpensesByCategory(startDate: Date, endDate: Date) {
       count: expense._count
     })).sort((a, b) => parseFloat(b.totalAmount) - parseFloat(a.totalAmount))
   } catch (error) {
-    console.error("Error fetching expenses by category:", error)
+    logError("Expenses", "Error fetching expenses by category", error)
     throw new Error("Gagal mengambil data pengeluaran per kategori")
   }
 }

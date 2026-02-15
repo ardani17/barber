@@ -6,6 +6,7 @@ import { z } from "zod"
 import Decimal from "decimal.js"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
+import { logError } from "@/lib/logger"
 
 const createBarberSchema = z.object({
   name: z.string().min(1, "Nama barber harus diisi"),
@@ -69,7 +70,7 @@ export async function createBarber(params: z.infer<typeof createBarberSchema>) {
       isActive: barber.isActive
     }
   } catch (error) {
-    console.error("Error creating barber:", error)
+    logError("Barbers", "Error creating barber", error)
     throw new Error(`Gagal membuat barber: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
@@ -122,7 +123,7 @@ export async function updateBarber(params: z.infer<typeof updateBarberSchema>) {
       isActive: barber.isActive
     }
   } catch (error) {
-    console.error("Error updating barber:", error)
+    logError("Barbers", "Error updating barber", error)
     throw new Error("Gagal mengupdate barber")
   }
 }
@@ -161,7 +162,7 @@ export async function toggleBarberActive(id: string) {
       isActive: updatedBarber.isActive
     }
   } catch (error) {
-    console.error("Error toggling barber active:", error)
+    logError("Barbers", "Error toggling barber active", error)
     throw new Error("Gagal mengubah status barber")
   }
 }
@@ -187,7 +188,7 @@ export async function getBarbers() {
       isActive: barber.isActive
     }))
   } catch (error) {
-    console.error("Error fetching barbers:", error)
+    logError("Barbers", "Error fetching barbers", error)
     throw new Error("Gagal mengambil data barber")
   }
 }
@@ -241,7 +242,7 @@ export async function getBarberById(id: string) {
       transactionCount: barber.transactions.length
     }
   } catch (error) {
-    console.error("Error fetching barber:", error)
+    logError("Barbers", "Gagal mengambil data barber", error)
     throw new Error("Gagal mengambil data barber")
   }
 }
@@ -317,7 +318,7 @@ export async function getBarberSalaryReport(barberId: string, startDate: Date, e
       }))
     }
   } catch (error) {
-    console.error("Error fetching barber salary report:", error)
+    logError("Barbers", "Error fetching barber salary report", error)
     throw new Error("Gagal mengambil laporan gaji barber")
   }
 }

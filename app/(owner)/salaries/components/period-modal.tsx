@@ -5,6 +5,7 @@ import { Modal } from './ui/modal'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { ZodError } from 'zod'
+import { logError } from '@/lib/logger'
 
 interface PeriodModalProps {
   isOpen: boolean
@@ -52,7 +53,7 @@ export function PeriodModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting period:', error)
+      logError('PeriodModal', 'Gagal submit periode gaji', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

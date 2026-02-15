@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { logError } from "@/lib/logger"
 import { useCartStore } from "@/stores/cart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -81,8 +82,8 @@ export default function POSPage() {
           removeItemsByTypeAndIds("product", disabledProductIds)
         }
       }
-    } catch (error) {
-      console.error("Error loading data:", error)
+    } catch (error: any) {
+      logError("POS", "Error loading data", error)
     } finally {
       setLoading(false)
     }
@@ -236,7 +237,7 @@ export default function POSPage() {
         alert(result.error || "Gagal melakukan checkout")
       }
     } catch (error) {
-      console.error("Checkout error:", error)
+      logError("POS", "Kesalahan saat checkout", error)
       alert("Terjadi kesalahan saat checkout")
     } finally {
       setIsProcessing(false)
@@ -266,7 +267,7 @@ export default function POSPage() {
         setTransactions(data)
       }
     } catch (error) {
-      console.error("Error loading transactions:", error)
+      logError("POS", "Gagal memuat transaksi", error)
     } finally {
       setLoadingHistory(false)
     }
@@ -286,7 +287,7 @@ export default function POSPage() {
       })
       setDailySummary(summary)
     } catch (error) {
-      console.error("Error loading daily summary:", error)
+      logError("POS", "Gagal memuat ringkasan harian", error)
     } finally {
       setLoadingSummary(false)
     }
@@ -330,6 +331,7 @@ export default function POSPage() {
               size="sm"
               variant={viewMode === "pos" ? "default" : "ghost"}
               onClick={() => handleViewModeChange("pos")}
+              aria-label="Mode Input Transaksi"
               className={
                 viewMode === "pos"
                   ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
@@ -343,6 +345,7 @@ export default function POSPage() {
               size="sm"
               variant={viewMode === "history" ? "default" : "ghost"}
               onClick={() => handleViewModeChange("history")}
+              aria-label="Mode Riwayat Transaksi"
               className={
                 viewMode === "history"
                   ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
@@ -375,6 +378,7 @@ export default function POSPage() {
             size="sm"
             className="bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => setShowAttendance(true)}
+            aria-label="Absen Capster"
           >
             <Check className="h-4 w-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Absen Capster</span>
@@ -542,7 +546,9 @@ export default function POSPage() {
                 <Button
                   variant={activeTab === "services" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setActiveTab("services")} className={
+                  onClick={() => setActiveTab("services")}
+                  aria-label="Tab Layanan"
+                  className={
                     activeTab === "services"
                       ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
                       : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
@@ -555,6 +561,7 @@ export default function POSPage() {
                   variant={activeTab === "products" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setActiveTab("products")}
+                  aria-label="Tab Produk"
                   className={
                     activeTab === "products"
                       ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
@@ -694,6 +701,7 @@ export default function POSPage() {
                       <Button
                         type="button"
                         variant={selectedPaymentMethod === "TUNAI" ? "default" : "outline"}
+                        aria-label="Pembayaran Tunai"
                         className={`flex-1 ${
                           selectedPaymentMethod === "TUNAI"
                             ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
@@ -707,6 +715,7 @@ export default function POSPage() {
                       <Button
                         type="button"
                         variant={selectedPaymentMethod === "QRIS" ? "default" : "outline"}
+                        aria-label="Pembayaran QRIS"
                         className={`flex-1 ${
                           selectedPaymentMethod === "QRIS"
                             ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"

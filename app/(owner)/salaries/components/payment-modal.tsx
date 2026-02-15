@@ -6,6 +6,7 @@ import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { ZodError } from 'zod'
+import { logError } from '@/lib/logger'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -61,7 +62,7 @@ export function PaymentModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting payment:', error)
+      logError('PaymentModal', 'Gagal submit pembayaran gaji', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

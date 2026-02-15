@@ -7,6 +7,7 @@ import { Select } from './ui/select'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { ZodError } from 'zod'
+import { logError } from '@/lib/logger'
 
 interface AdjustmentModalProps {
   isOpen: boolean
@@ -52,7 +53,7 @@ export function AdjustmentModal({
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting adjustment:', error)
+      logError('AdjustmentModal', 'Gagal submit penyesuaian', error)
       if (error instanceof ZodError) {
         const errorMessages = error.issues.map(err => err.message).join('\n')
         alert(errorMessages)

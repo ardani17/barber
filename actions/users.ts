@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
+import { logError } from "@/lib/logger"
 
 const createUserSchema = z.object({
   username: z.string().min(3, "Username minimal 3 karakter"),
@@ -76,7 +77,7 @@ export async function createUser(params: z.infer<typeof createUserSchema>) {
       }
     }
   } catch (error) {
-    console.error("Error creating user:", error)
+    logError("Users", "Error creating user", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal membuat user"
@@ -136,7 +137,7 @@ export async function updateUser(params: z.infer<typeof updateUserSchema>) {
       }
     }
   } catch (error) {
-    console.error("Error updating user:", error)
+    logError("Users", "Error updating user", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal mengupdate user"
@@ -165,7 +166,7 @@ export async function changePassword(params: z.infer<typeof changePasswordSchema
 
     return { success: true }
   } catch (error) {
-    console.error("Error changing password:", error)
+    logError("Users", "Error changing password", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal mengubah password"
@@ -193,7 +194,7 @@ export async function deleteUser(id: string) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error deleting user:", error)
+    logError("Users", "Error deleting user", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal menghapus user"
@@ -223,7 +224,7 @@ export async function getUsers() {
       }))
     }
   } catch (error) {
-    console.error("Error fetching users:", error)
+    logError("Users", "Gagal mengambil data user", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal mengambil data user"
@@ -257,7 +258,7 @@ export async function getUserById(id: string) {
       }
     }
   } catch (error) {
-    console.error("Error fetching user:", error)
+    logError("Users", "Error fetching user", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Gagal mengambil data user"

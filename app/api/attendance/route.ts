@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import Decimal from "decimal.js"
+import { logError } from "@/lib/logger"
 
 const attendanceSchema = z.object({
   barberId: z.string(),
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ attendances: sanitizedAttendances })
   } catch (error) {
-    console.error("Error fetching attendance:", error)
+    logError("API", "Gagal mengambil data absensi", error)
     return NextResponse.json(
       { error: "Gagal mengambil data absensi" },
       { status: 500 }
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(sanitizedAttendance)
   } catch (error) {
-    console.error("Error creating attendance:", error)
+    logError("AttendanceAPI", "Error creating attendance", error)
     return NextResponse.json(
       { error: "Gagal mencatat absensi" },
       { status: 500 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -161,7 +162,7 @@ export default function TransactionsPage() {
       const accounts = await getCashAccounts()
       setCashAccounts(accounts)
     } catch (error) {
-      console.error("Error loading cash accounts:", error)
+      logError("Transactions", "Error loading cash accounts", error)
     }
   }
 
@@ -187,7 +188,7 @@ export default function TransactionsPage() {
       setBarbers(barbersData)
       setCashiers(cashiersData)
     } catch (error) {
-      console.error("Error loading transactions:", error)
+      logError("Transactions", "Error loading transactions", error)
     } finally {
       setLoading(false)
     }
@@ -206,7 +207,7 @@ export default function TransactionsPage() {
 
       setExpenses(expensesData)
     } catch (error) {
-      console.error("Error loading expenses:", error)
+      logError("Transactions", "Error loading expenses", error)
     }
   }
 
@@ -372,7 +373,7 @@ export default function TransactionsPage() {
       })
       loadExpenses()
     } catch (error) {
-      console.error("Error saving expense:", error)
+      logError("Transactions", "Gagal menyimpan pengeluaran", error)
       alert("Gagal menyimpan pengeluaran")
     }
   }
@@ -387,7 +388,7 @@ export default function TransactionsPage() {
       setDeletingExpense(null)
       loadExpenses()
     } catch (error) {
-      console.error("Error deleting expense:", error)
+      logError("Transactions", "Error deleting expense", error)
       alert("Gagal menghapus pengeluaran")
     }
   }

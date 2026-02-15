@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,7 +48,7 @@ export default function InventoryPage() {
         setProducts(productsData)
       }
     } catch (error) {
-      console.error("Error fetching inventory data:", error)
+      logError("Inventory", "Error fetching inventory data", error)
     } finally {
       setLoading(false)
     }
@@ -71,7 +72,7 @@ export default function InventoryPage() {
         ))
       }
     } catch (error) {
-      console.error("Error toggling service:", error)
+      logError("Inventory", "Error toggling service", error)
     }
   }
 
@@ -89,7 +90,7 @@ export default function InventoryPage() {
         ))
       }
     } catch (error) {
-      console.error("Error toggling product:", error)
+      logError("Inventory", "Error toggling product", error)
     }
   }
 
@@ -205,43 +206,43 @@ export default function InventoryPage() {
             </div>
 
             <TabsContent value="services" className="mt-0 w-full">
-              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full">
+              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full hidden sm:block">
                 <div className="overflow-x-auto w-full">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted">
-                        <TableHead className="text-[10px] sm:text-xs text-foreground whitespace-nowrap py-1.5 px-1">Nama Layanan</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Harga</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Status</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Aksi</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground whitespace-nowrap py-1.5 px-1">Nama Layanan</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Harga</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Status</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-2 text-muted-foreground text-[10px] sm:text-xs">
+                          <TableCell colSpan={4} className="text-center py-2 text-muted-foreground text-xs sm:text-xs">
                             Memuat data...
                           </TableCell>
                         </TableRow>
                       ) : filteredServices.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-2 text-muted-foreground text-[10px] sm:text-xs">
+                          <TableCell colSpan={4} className="text-center py-2 text-muted-foreground text-xs sm:text-xs">
                             Tidak ada layanan ditemukan
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredServices.map((service) => (
                           <TableRow key={service.id}>
-                            <TableCell className="font-medium text-foreground text-[10px] sm:text-xs py-1.5 px-1">
+                            <TableCell className="font-medium text-foreground text-xs sm:text-xs py-1.5 px-1">
                               {service.name}
                             </TableCell>
-                            <TableCell className="text-right text-foreground text-[10px] sm:text-xs py-1.5 px-1">
+                            <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1">
                               {formatCurrency(service.price)}
                             </TableCell>
                             <TableCell className="text-center py-1.5 px-1">
                               <Badge 
                                 variant={service.isActive ? "default" : "secondary"}
-                                className={service.isActive ? "bg-green-500 hover:bg-green-600 text-[10px] px-1.5 py-0.5" : "text-[10px] px-1.5 py-0.5"}
+                                className={service.isActive ? "bg-green-500 hover:bg-green-600 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}
                               >
                                 {service.isActive ? "Aktif" : "Nonaktif"}
                               </Badge>
@@ -270,39 +271,67 @@ export default function InventoryPage() {
                   </Table>
                 </div>
               </div>
+              <div className="grid gap-3 sm:hidden">
+                {loading ? (
+                  <div className="text-center py-4 text-muted-foreground text-xs">Memuat data...</div>
+                ) : filteredServices.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-xs">Tidak ada layanan ditemukan</div>
+                ) : (
+                  filteredServices.map((service) => (
+                    <div key={service.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="font-medium text-foreground text-xs">{service.name}</div>
+                        <Badge variant={service.isActive ? "default" : "secondary"} className={service.isActive ? "bg-green-500 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                          {service.isActive ? "Aktif" : "Nonaktif"}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-3">{formatCurrency(service.price)}</div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditService(service)} className="h-8 text-xs flex-1">
+                          <Edit className="h-3 w-3 mr-1" /> Edit
+                        </Button>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">Aktif</span>
+                          <Switch checked={service.isActive} onCheckedChange={() => handleToggleService(service.id, service.isActive)} className="data-[state=checked]:bg-green-500 scale-75" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="products" className="mt-0 w-full">
-              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full">
+              <div className="rounded-md border border-yellow-500 dark:border-gray-700 w-full hidden sm:block">
                 <div className="overflow-x-auto w-full">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted">
-                        <TableHead className="text-[10px] sm:text-xs text-foreground whitespace-nowrap py-1.5 px-1">Nama Produk</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1 hidden sm:table-cell">Harga Beli</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Harga Jual</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Stock</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1 hidden sm:table-cell">Status</TableHead>
-                        <TableHead className="text-[10px] sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Aksi</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground whitespace-nowrap py-1.5 px-1">Nama Produk</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1 hidden sm:table-cell">Harga Beli</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Harga Jual</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-right whitespace-nowrap py-1.5 px-1">Stock</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1 hidden sm:table-cell">Status</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-foreground text-center whitespace-nowrap py-1.5 px-1">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-2 text-muted-foreground text-[10px] sm:text-xs">
+                          <TableCell colSpan={6} className="text-center py-2 text-muted-foreground text-xs sm:text-xs">
                             Memuat data...
                           </TableCell>
                         </TableRow>
                       ) : filteredProducts.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-2 text-muted-foreground text-[10px] sm:text-xs">
+                          <TableCell colSpan={6} className="text-center py-2 text-muted-foreground text-xs sm:text-xs">
                             Tidak ada produk ditemukan
                           </TableCell>
                         </TableRow>
                       ) : (
                         filteredProducts.map((product) => (
                           <TableRow key={product.id}>
-                            <TableCell className="font-medium text-foreground text-[10px] sm:text-xs py-1.5 px-1">
+                            <TableCell className="font-medium text-foreground text-xs sm:text-xs py-1.5 px-1">
                               <div className="flex items-center gap-1 sm:gap-2">
                                 {product.stock <= 5 && product.isActive && (
                                   <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 shrink-0" />
@@ -310,16 +339,16 @@ export default function InventoryPage() {
                                 <span className="truncate max-w-[80px] sm:max-w-none">{product.name}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-right text-foreground text-[10px] sm:text-xs py-1.5 px-1 hidden sm:table-cell">
+                            <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1 hidden sm:table-cell">
                               {formatCurrency(product.buyPrice)}
                             </TableCell>
-                            <TableCell className="text-right text-foreground text-[10px] sm:text-xs py-1.5 px-1">
+                            <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1">
                               {formatCurrency(product.sellPrice)}
                             </TableCell>
-                            <TableCell className="text-right text-foreground text-[10px] sm:text-xs py-1.5 px-1">
+                            <TableCell className="text-right text-foreground text-xs sm:text-xs py-1.5 px-1">
                               <Badge 
                                 variant={product.stock <= 5 ? "destructive" : "outline"}
-                                className={product.stock <= 5 ? "bg-red-500 hover:bg-red-600 text-[10px] px-1.5 py-0.5" : "text-[10px] px-1.5 py-0.5"}
+                                className={product.stock <= 5 ? "bg-red-500 hover:bg-red-600 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}
                               >
                                 {product.stock}
                               </Badge>
@@ -327,7 +356,7 @@ export default function InventoryPage() {
                             <TableCell className="text-center py-1.5 px-1 hidden sm:table-cell">
                               <Badge 
                                 variant={product.isActive ? "default" : "secondary"}
-                                className={product.isActive ? "bg-green-500 hover:bg-green-600 text-[10px] px-1.5 py-0.5" : "text-[10px] px-1.5 py-0.5"}
+                                className={product.isActive ? "bg-green-500 hover:bg-green-600 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}
                               >
                                 {product.isActive ? "Aktif" : "Nonaktif"}
                               </Badge>
@@ -364,6 +393,50 @@ export default function InventoryPage() {
                     </TableBody>
                   </Table>
                 </div>
+              </div>
+              <div className="grid gap-3 sm:hidden">
+                {loading ? (
+                  <div className="text-center py-4 text-muted-foreground text-xs">Memuat data...</div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-xs">Tidak ada produk ditemukan</div>
+                ) : (
+                  filteredProducts.map((product) => (
+                    <div key={product.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1">
+                          {product.stock <= 5 && product.isActive && <AlertTriangle className="h-3 w-3 text-red-500" />}
+                          <span className="font-medium text-foreground text-xs truncate max-w-[140px]">{product.name}</span>
+                        </div>
+                        <Badge variant={product.stock <= 5 ? "destructive" : "outline"} className={product.stock <= 5 ? "bg-red-500 text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                          Stock: {product.stock}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block">Harga Jual</span>
+                          <span className="text-foreground font-medium">{formatCurrency(product.sellPrice)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block">Status</span>
+                          <Badge variant={product.isActive ? "default" : "secondary"} className={product.isActive ? "bg-green-500 text-xs px-1.5 py-0.5 mt-0.5" : "text-xs px-1.5 py-0.5 mt-0.5"}>
+                            {product.isActive ? "Aktif" : "Nonaktif"}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditProduct(product)} className="h-8 text-xs flex-1">
+                          <Edit className="h-3 w-3 mr-1" /> Edit
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleAdjustStock(product)} className="h-8 text-xs flex-1">
+                          <Package className="h-3 w-3 mr-1" /> Stock
+                        </Button>
+                        <div className="flex items-center gap-1 text-xs">
+                          <Switch checked={product.isActive} onCheckedChange={() => handleToggleProduct(product.id, product.isActive)} className="data-[state=checked]:bg-green-500 scale-75" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </TabsContent>
           </Tabs>

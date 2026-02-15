@@ -12,46 +12,49 @@ interface ToastState {
   variant?: ToastVariant
 }
 
-let toastState: ToastState | null = null
-let toastSetters: React.Dispatch<React.SetStateAction<ToastState | null>> | null = null
-
-export function useToast() {
-  const [state, setState] = React.useState<ToastState | null>(null)
-
-  React.useEffect(() => {
-    toastSetters = setState
-    return () => {
-      if (toastSetters === setState) {
-        toastSetters = null
-      }
-    }
-  }, [])
-
-  const toast = React.useCallback((props: Omit<ToastState, "open">) => {
-    toastState = { ...props, open: true }
-    toastSetters?.(toastState)
-  }, [])
-
-  return { toast, state }
+interface ToastContextValue {
+  toast: (props: Omit<ToastState, "open">) => void
+  state: ToastState | null
+  dismiss: () => void
 }
 
-export function Toaster() {
-  const { state } = useToast()
+const ToastContext = React.createContext<ToastContextValue | null>(null)
 
-  if (!state) return null
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = React.useState<ToastState | null>(null)
+
+  const toast = React.useCallback((props: Omit<ToastState, "open">) => {
+    setState({ ...props, open: true })
+  }, [])
+
+  const dismiss = React.useCallback(() => {
+    setState(null)
+  }, [])
+
+  const value = React.useMemo(() => ({ toast, state, dismiss }), [toast, state, dismiss])
 
   return (
-    <Toast
-      open={state.open}
-      onOpenChange={(open) => {
-        if (!open) {
-          toastSetters?.(null)
-          toastState = null
-        }
-      }}
-      title={state.title}
-      description={state.description}
-      variant={state.variant}
-    />
+    <ToastContext.Provider value={value}>
+      {children}
+      {state && (
+        <Toast
+          open={state.open}
+          onOpenChange={(open) => {
+            if (!open) dismiss()
+          }}
+          title={state.title}
+          description={state.description}
+          variant={state.variant}
+        />
+      )}
+    </ToastContext.Provider>
   )
+}
+
+export function useToast() {
+  const context = React.useContext(ToastContext)
+  if (!context) {
+    throw new Error("useToast must be used within a ToastProvider")
+  }
+  return context
 }

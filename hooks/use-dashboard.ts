@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { getDashboardStats, getDailyRevenue, getRevenueByBarber, getTopServices, getTopProducts, getRevenueByPaymentMethod } from "@/actions/dashboard"
 import { getExpenses, getExpensesByCategory } from "@/actions/expenses"
+import { logError } from "@/lib/logger"
 import type { DateRangeType } from "@/types"
 
 interface DashboardMetrics {
@@ -42,30 +43,38 @@ interface DashboardData {
   expensesBreakdown: ExpensesBreakdown
 }
 
+const INITIAL_DATA: DashboardData = {
+  metrics: {
+    grossProfit: "0",
+    totalExpenses: "0",
+    totalCommissions: "0",
+    netProfit: "0",
+    revenueGrowth: "0"
+  },
+  cashflowData: [],
+  commissionData: [],
+  revenueBreakdown: {
+    topServices: [],
+    topProducts: [],
+    paymentMethods: []
+  },
+  expensesBreakdown: {
+    categories: []
+  }
+}
+
 export function useDashboard(selectedRange: DateRangeType, customStartDate?: Date, customEndDate?: Date) {
-  const [data, setData] = useState<DashboardData>({
-    metrics: {
-      grossProfit: "0",
-      totalExpenses: "0",
-      totalCommissions: "0",
-      netProfit: "0",
-      revenueGrowth: "0"
-    },
-    cashflowData: [],
-    commissionData: [],
-    revenueBreakdown: {
-      topServices: [],
-      topProducts: [],
-      paymentMethods: []
-    },
-    expensesBreakdown: {
-      categories: []
-    }
-  })
+  const [data, setData] = useState<DashboardData>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    abortControllerRef.current = new AbortController()
+
     try {
       setLoading(true)
       setError(null)
@@ -115,7 +124,7 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
       const grossProfit = parseFloat(stats.monthRevenue)
       const netProfit = grossProfit - totalExpenses
 
-      const formattedCashflow = dailyRevenue.map((dr, index) => {
+      const formattedCashflow = dailyRevenue.map((dr) => {
         const date = new Date(dr.date)
         const monthName = date.toLocaleDateString("id-ID", { month: "short" })
         return {
@@ -131,36 +140,47 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
         commission: parseFloat(br.totalCommission)
       }))
 
-      setData({
-        metrics: {
-          grossProfit: grossProfit.toString(),
-          totalExpenses: totalExpenses.toString(),
-          totalCommissions: stats.monthCommission,
-          netProfit: netProfit.toString(),
-          revenueGrowth: stats.revenueGrowth
-        },
-        cashflowData: formattedCashflow,
-        commissionData: formattedCommission,
-        revenueBreakdown: {
-          topServices,
-          topProducts,
-          paymentMethods
-        },
-        expensesBreakdown: {
-          categories: expensesByCategory
-        }
-      })
+      if (!abortControllerRef.current.signal.aborted) {
+        setData({
+          metrics: {
+            grossProfit: grossProfit.toString(),
+            totalExpenses: totalExpenses.toString(),
+            totalCommissions: stats.monthCommission,
+            netProfit: netProfit.toString(),
+            revenueGrowth: stats.revenueGrowth
+          },
+          cashflowData: formattedCashflow,
+          commissionData: formattedCommission,
+          revenueBreakdown: {
+            topServices,
+            topProducts,
+            paymentMethods
+          },
+          expensesBreakdown: {
+            categories: expensesByCategory
+          }
+        })
+      }
     } catch (err) {
-      setError("Terjadi kesalahan saat memuat data dashboard")
-      console.error("Error loading dashboard data:", err)
+      if (!abortControllerRef.current?.signal.aborted) {
+        setError("Terjadi kesalahan saat memuat data dashboard")
+        logError("Dashboard", "Error loading dashboard data", err)
+      }
     } finally {
-      setLoading(false)
+      if (!abortControllerRef.current?.signal.aborted) {
+        setLoading(false)
+      }
     }
-  }
+  }, [selectedRange, customStartDate, customEndDate])
 
   useEffect(() => {
     loadData()
-  }, [selectedRange, customStartDate, customEndDate])
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [loadData])
 
   return {
     data,

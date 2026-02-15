@@ -204,7 +204,7 @@ export default function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[400px] h-8 sm:h-10 text-[10px] sm:text-xs">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[400px] h-8 sm:h-10 text-xs sm:text-xs">
             <TabsTrigger value="store" className="gap-1 sm:gap-2">
               <Store className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Profil Toko</span>
@@ -302,42 +302,43 @@ export default function SettingsPage() {
                   setEditingCashier(null)
                   setCashierForm({ username: "", email: "", password: "", role: "CASHIER" })
                   setCashierModalOpen(true)
-                }} size="sm" className="gap-1 sm:gap-2 h-8 sm:h-9 text-[10px] sm:text-xs">
+                }} size="sm" className="gap-1 sm:gap-2 h-8 sm:h-9 text-xs sm:text-xs">
                   <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Tambah User</span>
                 </Button>
               </CardHeader>
               <CardContent className="p-2 sm:p-6">
                 {isLoadingCashiers ? (
-                  <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400 text-[10px] sm:text-sm">
+                  <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                     Memuat data user...
                   </div>
                 ) : cashiers.length === 0 ? (
-                  <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400 text-[10px] sm:text-sm">
+                  <div className="text-center py-4 sm:py-8 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                     Belum ada user yang ditambahkan
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
+                  <>
+                    <div className="overflow-x-auto hidden sm:block">
+                      <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="py-2 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2">Username</TableHead>
-                          <TableHead className="py-2 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2 hidden sm:table-cell">Email</TableHead>
-                          <TableHead className="py-2 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2">Role</TableHead>
-                          <TableHead className="py-2 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2 text-right">Aksi</TableHead>
+                          <TableHead className="py-2 px-1 text-xs sm:text-xs sm:py-3 sm:px-2">Username</TableHead>
+                          <TableHead className="py-2 px-1 text-xs sm:text-xs sm:py-3 sm:px-2 hidden sm:table-cell">Email</TableHead>
+                          <TableHead className="py-2 px-1 text-xs sm:text-xs sm:py-3 sm:px-2">Role</TableHead>
+                          <TableHead className="py-2 px-1 text-xs sm:text-xs sm:py-3 sm:px-2 text-right">Aksi</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {cashiers.map((cashier) => (
                           <TableRow key={cashier.id}>
-                            <TableCell className="font-medium py-1.5 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2">
+                            <TableCell className="font-medium py-1.5 px-1 text-xs sm:text-xs sm:py-3 sm:px-2">
                               {cashier.username}
                             </TableCell>
-                            <TableCell className="py-1.5 px-1 text-[10px] sm:text-xs sm:py-3 sm:px-2 hidden sm:table-cell">
+                            <TableCell className="py-1.5 px-1 text-xs sm:text-xs sm:py-3 sm:px-2 hidden sm:table-cell">
                               {cashier.email}
                             </TableCell>
                             <TableCell className="py-1.5 px-1 sm:py-3 sm:px-2">
-                              <Badge variant={cashier.role === "OWNER" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0.5 sm:text-xs">
+                              <Badge variant={cashier.role === "OWNER" ? "default" : "secondary"} className="text-xs px-1.5 py-0.5 sm:text-xs">
                                 {cashier.role === "OWNER" ? "Owner" : "Kasir"}
                               </Badge>
                             </TableCell>
@@ -347,7 +348,7 @@ export default function SettingsPage() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleEditCashier(cashier)}
-                                  className="h-6 w-6 sm:h-8 sm:w-8 p-0"
+                                  className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-6 w-6 sm:h-8 sm:w-8 p-0"
                                 >
                                   <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
@@ -358,7 +359,7 @@ export default function SettingsPage() {
                                     setDeletingCashier(cashier)
                                     setDeleteDialogOpen(true)
                                   }}
-                                  className="h-6 w-6 sm:h-8 sm:w-8 p-0 text-red-600 hover:text-red-700"
+                                  className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-6 w-6 sm:h-8 sm:w-8 p-0 text-red-600 hover:text-red-700"
                                 >
                                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
@@ -369,6 +370,30 @@ export default function SettingsPage() {
                       </TableBody>
                     </Table>
                   </div>
+                  <div className="grid gap-3 sm:hidden">
+                    {cashiers.map((cashier) => (
+                      <div key={cashier.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="text-xs font-medium">{cashier.username}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{cashier.email}</p>
+                          </div>
+                          <Badge variant={cashier.role === "OWNER" ? "default" : "secondary"} className={cashier.role === "OWNER" ? "bg-yellow-500 text-black text-xs px-1.5 py-0.5" : "text-xs px-1.5 py-0.5"}>
+                            {cashier.role === "OWNER" ? "Owner" : "Kasir"}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="outline" size="sm" onClick={() => handleEditCashier(cashier)} className="h-8 w-8 p-0">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => { setDeletingCashier(cashier); setDeleteDialogOpen(true) }} className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
                 )}
               </CardContent>
             </Card>
