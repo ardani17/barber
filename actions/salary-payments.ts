@@ -7,10 +7,47 @@ import { z } from "zod"
 import { revalidatePath } from "next/cache"
 import { getBarberSalaryReport } from "./barbers"
 
+const dateSchema = z.preprocess((value) => {
+  if (value instanceof Date) {
+    return value
+  }
+  if (typeof value === "string" || typeof value === "number") {
+    return new Date(value)
+  }
+  return value
+}, z.date())
+
+const normalizeDate = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+const getExpectedMonthlyEndDate = (startDate: Date) => {
+  const year = startDate.getFullYear()
+  const month = startDate.getMonth()
+  const day = startDate.getDate()
+  const nextMonthSameDay = new Date(year, month + 1, day)
+  if (nextMonthSameDay.getDate() !== day) {
+    return new Date(year, month + 2, 0)
+  }
+  const expectedEnd = new Date(nextMonthSameDay)
+  expectedEnd.setDate(expectedEnd.getDate() - 1)
+  return expectedEnd
+}
+
+const isMonthlyPeriod = (startDate: Date, endDate: Date) => {
+  const start = normalizeDate(startDate)
+  const end = normalizeDate(endDate)
+  if (end < start) {
+    return false
+  }
+  const expectedEnd = normalizeDate(getExpectedMonthlyEndDate(start))
+  return expectedEnd.getTime() === end.getTime()
+}
+
 const paySalarySchema = z.object({
   barberId: z.string(),
-  periodStart: z.date(),
-  periodEnd: z.date(),
+  periodStart: dateSchema,
+  periodEnd: dateSchema,
   tunaiAmount: z.string(),
   bankAmount: z.string(),
   qrisAmount: z.string(),
@@ -30,8 +67,8 @@ const addDebtSchema = z.object({
 
 const addAdjustmentSchema = z.object({
   barberId: z.string(),
-  periodStart: z.date(),
-  periodEnd: z.date(),
+  periodStart: dateSchema,
+  periodEnd: dateSchema,
   type: z.enum(["BONUS", "DEDUCTION"]),
   amount: z.string(),
   reason: z.string()
@@ -48,8 +85,8 @@ const payDebtSchema = z.object({
 const createSalaryPeriodSchema = z.object({
   barberId: z.string(),
   name: z.string(),
-  startDate: z.date(),
-  endDate: z.date()
+  startDate: dateSchema,
+  endDate: dateSchema
 }).refine(async (data) => {
   const barber = await prisma.barber.findUnique({
     where: { id: data.barberId },
@@ -57,13 +94,7 @@ const createSalaryPeriodSchema = z.object({
   })
   
   if (barber?.baseSalary && !barber.baseSalary.equals(new Decimal(0))) {
-    const diffTime = Math.abs(data.endDate.getTime() - data.startDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const diffMonths = diffDays / 30.44
-    
-    if (diffMonths < 0.95 || diffMonths > 1.05) {
-      return false
-    }
+    return isMonthlyPeriod(data.startDate, data.endDate)
   }
   
   return true
@@ -74,8 +105,8 @@ const createSalaryPeriodSchema = z.object({
 const updateSalaryPeriodSchema = z.object({
   id: z.string(),
   name: z.string(),
-  startDate: z.date(),
-  endDate: z.date()
+  startDate: dateSchema,
+  endDate: dateSchema
 })
 
 export async function paySalary(params: z.infer<typeof paySalarySchema>) {

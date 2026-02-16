@@ -344,7 +344,6 @@ model SalaryPeriod {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
-  @@unique([barberId, isActive])
   @@index([barberId])
   @@index([isActive])
 }
