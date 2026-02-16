@@ -1,16 +1,31 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { ArrowUp, ArrowDown, DollarSign, Wallet, TrendingUp, TrendingDown } from "lucide-react"
 import { DateRangePicker } from "@/components/owner/date-range-picker"
 import { MetricCard } from "@/components/owner/metric-card"
 import { ChartContainer } from "@/components/owner/chart-container"
-import { CashflowChart } from "@/components/owner/charts/cashflow-chart"
-import { CommissionChart } from "@/components/owner/charts/commission-chart"
 import { RevenueBreakdown } from "@/components/owner/revenue-breakdown"
 import { ExpensesBreakdown } from "@/components/owner/expenses-breakdown"
 import { useDashboard } from "@/hooks/use-dashboard"
 import type { DateRangeType } from "@/types"
+
+const CashflowChart = dynamic(
+  () => import("@/components/owner/charts/cashflow-chart").then(mod => ({ default: mod.CashflowChart })),
+  {
+    ssr: false,
+    loading: () => <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">Memuat chart...</div>
+  }
+)
+
+const CommissionChart = dynamic(
+  () => import("@/components/owner/charts/commission-chart").then(mod => ({ default: mod.CommissionChart })),
+  {
+    ssr: false,
+    loading: () => <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">Memuat chart...</div>
+  }
+)
 
 export default function DashboardPage() {
   const [selectedRange, setSelectedRange] = useState<DateRangeType>("month")

@@ -24,11 +24,15 @@ const updateExpenseSchema = z.object({
   accountId: z.string().optional()
 })
 
+const EXPENSE_PAGE_SIZE = 20
+
 const getExpensesSchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
   category: z.enum(["RENT", "UTILITIES", "SUPPLIES", "OTHER"]).optional(),
-  search: z.string().optional()
+  search: z.string().optional(),
+  page: z.number().int().positive().optional().default(1),
+  pageSize: z.number().int().positive().max(100).optional().default(EXPENSE_PAGE_SIZE)
 })
 
 export async function createExpense(params: z.infer<typeof createExpenseSchema>) {
@@ -160,7 +164,7 @@ export async function getExpenses(params: z.infer<typeof getExpensesSchema>) {
     throw new Error("Unauthorized")
   }
 
-  const { startDate, endDate, category, search } = getExpensesSchema.parse(params)
+  const { startDate, endDate, category, search, page, pageSize } = getExpensesSchema.parse(params)
 
   const where: any = {
     date: {
@@ -180,25 +184,42 @@ export async function getExpenses(params: z.infer<typeof getExpensesSchema>) {
     ]
   }
 
-  const expenses = await prisma.expense.findMany({
-    where,
-    include: {
-      account: true
-    },
-    orderBy: {
-      date: "desc"
-    }
-  })
+  const [expenses, totalCount] = await Promise.all([
+    prisma.expense.findMany({
+      where,
+      include: {
+        account: true
+      },
+      orderBy: {
+        date: "desc"
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    }),
+    prisma.expense.count({ where })
+  ])
 
-  return expenses.map(expense => ({
-    id: expense.id,
-    date: expense.date,
-    category: expense.category,
-    amount: expense.amount.toString(),
-    description: expense.title,
-    accountId: expense.accountId,
-    accountName: expense.account?.name
-  }))
+  const totalPages = Math.ceil(totalCount / pageSize)
+
+  return {
+    data: expenses.map(expense => ({
+      id: expense.id,
+      date: expense.date,
+      category: expense.category,
+      amount: expense.amount.toString(),
+      description: expense.title,
+      accountId: expense.accountId,
+      accountName: expense.account?.name
+    })),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    }
+  }
 }
 
 export async function getExpensesByCategory(startDate: Date, endDate: Date) {

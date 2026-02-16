@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -42,7 +42,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Search, Calendar, Download, Filter, Eye, Plus, Edit, Trash2, TrendingDown } from "lucide-react"
+import { Search, Calendar, Download, Filter, Eye, Plus, Edit, Trash2, TrendingDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { useDebounce } from "@/hooks/use-debounce"
 import { formatCurrency } from "@/lib/decimal"
 import {
   getTransactions,
@@ -113,6 +114,24 @@ const dateRanges = [
   { label: "Kustom", value: "custom" }
 ]
 
+interface PaginationState {
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
+const initialPagination: PaginationState = {
+  page: 1,
+  pageSize: 20,
+  totalCount: 0,
+  totalPages: 0,
+  hasNextPage: false,
+  hasPrevPage: false
+}
+
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [barbers, setBarbers] = useState<Barber[]>([])
@@ -126,7 +145,10 @@ export default function TransactionsPage() {
   const [selectedCashier, setSelectedCashier] = useState<string>("all")
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [pagination, setPagination] = useState<PaginationState>(initialPagination)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   
   const [activeTab, setActiveTab] = useState("transactions")
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -150,12 +172,26 @@ export default function TransactionsPage() {
   const [cashAccounts, setCashAccounts] = useState<Array<{ id: string; name: string; type: string; balance: string; isActive: boolean }>>([])
   const [expenseSearchQuery, setExpenseSearchQuery] = useState("")
   const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<string>("all")
+  const [expensePagination, setExpensePagination] = useState<PaginationState>(initialPagination)
+
+  const debouncedExpenseSearchQuery = useDebounce(expenseSearchQuery, 300)
 
   useEffect(() => {
-    loadData()
-    loadExpenses()
+    if (activeTab === "transactions") {
+      loadData(1)
+    }
+  }, [selectedRange, customStartDate, customEndDate, selectedBarber, selectedCashier, selectedPaymentMethod, debouncedSearchQuery, activeTab])
+
+  useEffect(() => {
+    if (activeTab === "expenses") {
+      loadExpenses(1)
+    }
+  }, [selectedRange, customStartDate, customEndDate, selectedExpenseCategory, debouncedExpenseSearchQuery, activeTab])
+
+  useEffect(() => {
     loadCashAccounts()
-  }, [selectedRange, customStartDate, customEndDate, selectedBarber, selectedCashier, selectedPaymentMethod, searchQuery, selectedExpenseCategory, expenseSearchQuery])
+    loadBarbersAndCashiers()
+  }, [])
 
   const loadCashAccounts = async () => {
     try {
@@ -166,27 +202,37 @@ export default function TransactionsPage() {
     }
   }
 
-  const loadData = async () => {
+  const loadBarbersAndCashiers = async () => {
+    try {
+      const [barbersData, cashiersData] = await Promise.all([
+        getBarbers(),
+        getCashiers()
+      ])
+      setBarbers(barbersData)
+      setCashiers(cashiersData)
+    } catch (error) {
+      logError("Transactions", "Error loading barbers and cashiers", error)
+    }
+  }
+
+  const loadData = async (page: number = pagination.page) => {
     try {
       setLoading(true)
       const { startDate, endDate } = getDateRange(selectedRange)
 
-      const [transactionsData, barbersData, cashiersData] = await Promise.all([
-        getTransactions({
-          startDate,
-          endDate,
-          barberId: selectedBarber === "all" ? undefined : selectedBarber,
-          cashierId: selectedCashier === "all" ? undefined : selectedCashier,
-          paymentMethod: selectedPaymentMethod === "all" ? undefined : (selectedPaymentMethod as "TUNAI" | "QRIS"),
-          search: searchQuery || undefined
-        }),
-        getBarbers(),
-        getCashiers()
-      ])
+      const result = await getTransactions({
+        startDate,
+        endDate,
+        barberId: selectedBarber === "all" ? undefined : selectedBarber,
+        cashierId: selectedCashier === "all" ? undefined : selectedCashier,
+        paymentMethod: selectedPaymentMethod === "all" ? undefined : (selectedPaymentMethod as "TUNAI" | "QRIS"),
+        search: debouncedSearchQuery || undefined,
+        page,
+        pageSize: pagination.pageSize
+      })
 
-      setTransactions(transactionsData)
-      setBarbers(barbersData)
-      setCashiers(cashiersData)
+      setTransactions(result.data)
+      setPagination(result.pagination)
     } catch (error) {
       logError("Transactions", "Error loading transactions", error)
     } finally {
@@ -194,21 +240,44 @@ export default function TransactionsPage() {
     }
   }
 
-  const loadExpenses = async () => {
+  const handlePageChange = (newPage: number) => {
+    loadData(newPage)
+  }
+
+  const handlePageSizeChange = (newSize: string) => {
+    const size = parseInt(newSize, 10)
+    setPagination(prev => ({ ...prev, pageSize: size, page: 1 }))
+    loadData(1)
+  }
+
+  const loadExpenses = async (page: number = expensePagination.page) => {
     try {
       const { startDate, endDate } = getDateRange(selectedRange)
       
-      const expensesData = await getExpenses({
+      const result = await getExpenses({
         startDate,
         endDate,
         category: selectedExpenseCategory === "all" ? undefined : (selectedExpenseCategory as any),
-        search: expenseSearchQuery || undefined
+        search: debouncedExpenseSearchQuery || undefined,
+        page,
+        pageSize: expensePagination.pageSize
       })
 
-      setExpenses(expensesData)
+      setExpenses(result.data)
+      setExpensePagination(result.pagination)
     } catch (error) {
       logError("Transactions", "Error loading expenses", error)
     }
+  }
+
+  const handleExpensePageChange = (newPage: number) => {
+    loadExpenses(newPage)
+  }
+
+  const handleExpensePageSizeChange = (newSize: string) => {
+    const size = parseInt(newSize, 10)
+    setExpensePagination(prev => ({ ...prev, pageSize: size, page: 1 }))
+    loadExpenses(1)
   }
 
   const getDateRange = (range: string) => {
@@ -561,7 +630,7 @@ export default function TransactionsPage() {
 
             <Card className="mt-4 sm:mt-6 shadow-sm">
               <CardHeader className="flex flex-row items-start sm:items-center justify-between gap-2 pb-3">
-                <CardTitle className="text-base sm:text-lg">Daftar Transaksi ({transactions.length})</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Daftar Transaksi ({pagination.totalCount})</CardTitle>
                 <Button onClick={exportToCSV} variant="outline" size="sm" className="gap-2 h-8 px-2 sm:h-9 sm:px-4">
                   <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Export CSV</span>
@@ -677,6 +746,80 @@ export default function TransactionsPage() {
                         </Card>
                       ))}
                     </div>
+
+                    {pagination.totalPages > 1 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>Tampilkan</span>
+                          <Select value={String(pagination.pageSize)} onValueChange={handlePageSizeChange}>
+                            <SelectTrigger className="w-20 h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10">10</SelectItem>
+                              <SelectItem value="20">20</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                              <SelectItem value="100">100</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span>dari {pagination.totalCount} transaksi</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(pagination.page - 1)}
+                            disabled={!pagination.hasPrevPage || loading}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                              let pageNum: number
+                              if (pagination.totalPages <= 5) {
+                                pageNum = i + 1
+                              } else if (pagination.page <= 3) {
+                                pageNum = i + 1
+                              } else if (pagination.page >= pagination.totalPages - 2) {
+                                pageNum = pagination.totalPages - 4 + i
+                              } else {
+                                pageNum = pagination.page - 2 + i
+                              }
+                              
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={pageNum === pagination.page ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => handlePageChange(pageNum)}
+                                  disabled={loading}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  {pageNum}
+                                </Button>
+                              )
+                            })}
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(pagination.page + 1)}
+                            disabled={!pagination.hasNextPage || loading}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="text-sm text-muted-foreground">
+                          Halaman {pagination.page} dari {pagination.totalPages}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>
@@ -769,7 +912,7 @@ export default function TransactionsPage() {
 
             <Card className="mt-4 sm:mt-6 shadow-sm">
               <CardHeader className="flex flex-row items-start sm:items-center justify-between gap-2 pb-3">
-                <CardTitle className="text-base sm:text-lg">Daftar Pengeluaran ({expenses.length})</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Daftar Pengeluaran ({expensePagination.totalCount})</CardTitle>
                 <div className="flex gap-1 sm:gap-2">
                   <Button onClick={exportExpensesToCSV} variant="outline" size="sm" className="gap-2 h-8 px-2 sm:h-9 sm:px-4">
                     <Download className="h-4 w-4" />
@@ -880,6 +1023,79 @@ export default function TransactionsPage() {
                         </Card>
                       ))}
                     </div>
+
+                    {expensePagination.totalPages > 1 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>Tampilkan</span>
+                          <Select value={String(expensePagination.pageSize)} onValueChange={handleExpensePageSizeChange}>
+                            <SelectTrigger className="w-20 h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10">10</SelectItem>
+                              <SelectItem value="20">20</SelectItem>
+                              <SelectItem value="50">50</SelectItem>
+                              <SelectItem value="100">100</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span>dari {expensePagination.totalCount} pengeluaran</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleExpensePageChange(expensePagination.page - 1)}
+                            disabled={!expensePagination.hasPrevPage}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: Math.min(5, expensePagination.totalPages) }, (_, i) => {
+                              let pageNum: number
+                              if (expensePagination.totalPages <= 5) {
+                                pageNum = i + 1
+                              } else if (expensePagination.page <= 3) {
+                                pageNum = i + 1
+                              } else if (expensePagination.page >= expensePagination.totalPages - 2) {
+                                pageNum = expensePagination.totalPages - 4 + i
+                              } else {
+                                pageNum = expensePagination.page - 2 + i
+                              }
+                              
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={pageNum === expensePagination.page ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => handleExpensePageChange(pageNum)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  {pageNum}
+                                </Button>
+                              )
+                            })}
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleExpensePageChange(expensePagination.page + 1)}
+                            disabled={!expensePagination.hasNextPage}
+                            className="h-8 w-8 p-0"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="text-sm text-muted-foreground">
+                          Halaman {expensePagination.page} dari {expensePagination.totalPages}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>

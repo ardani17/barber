@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { getDashboardStats, getDailyRevenue, getRevenueByBarber, getTopServices, getTopProducts, getRevenueByPaymentMethod } from "@/actions/dashboard"
-import { getExpenses, getExpensesByCategory } from "@/actions/expenses"
+import { getDashboardData } from "@/actions/dashboard"
 import { logError } from "@/lib/logger"
 import type { DateRangeType } from "@/types"
 
@@ -109,57 +108,10 @@ export function useDashboard(selectedRange: DateRangeType, customStartDate?: Dat
           endDate = new Date(now.setHours(23, 59, 59, 999))
       }
 
-      const [stats, dailyRevenue, barberRevenue, expenses, topServices, topProducts, paymentMethods, expensesByCategory] = await Promise.all([
-        getDashboardStats({ startDate, endDate }),
-        getDailyRevenue(startDate, endDate),
-        getRevenueByBarber(startDate, endDate),
-        getExpenses({ startDate, endDate }),
-        getTopServices(startDate, endDate),
-        getTopProducts(startDate, endDate),
-        getRevenueByPaymentMethod(startDate, endDate),
-        getExpensesByCategory(startDate, endDate)
-      ])
-
-      const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0)
-      const grossProfit = parseFloat(stats.monthRevenue)
-      const netProfit = grossProfit - totalExpenses
-
-      const formattedCashflow = dailyRevenue.map((dr) => {
-        const date = new Date(dr.date)
-        const monthName = date.toLocaleDateString("id-ID", { month: "short" })
-        return {
-          name: `${monthName} ${date.getDate()}`,
-          income: parseFloat(dr.revenue),
-          expenses: expenses.filter(e => new Date(e.date).toISOString().split("T")[0] === dr.date)
-            .reduce((sum, e) => sum + parseFloat(e.amount), 0)
-        }
-      })
-
-      const formattedCommission = barberRevenue.map(br => ({
-        name: br.barberName,
-        commission: parseFloat(br.totalCommission)
-      }))
+      const dashboardData = await getDashboardData({ startDate, endDate })
 
       if (!abortControllerRef.current.signal.aborted) {
-        setData({
-          metrics: {
-            grossProfit: grossProfit.toString(),
-            totalExpenses: totalExpenses.toString(),
-            totalCommissions: stats.monthCommission,
-            netProfit: netProfit.toString(),
-            revenueGrowth: stats.revenueGrowth
-          },
-          cashflowData: formattedCashflow,
-          commissionData: formattedCommission,
-          revenueBreakdown: {
-            topServices,
-            topProducts,
-            paymentMethods
-          },
-          expensesBreakdown: {
-            categories: expensesByCategory
-          }
-        })
+        setData(dashboardData)
       }
     } catch (err) {
       if (!abortControllerRef.current?.signal.aborted) {

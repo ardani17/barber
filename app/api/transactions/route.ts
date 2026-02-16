@@ -5,7 +5,7 @@ import { handleApiError, handleValidationError } from "@/lib/error-handler"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { startDate, endDate, barberId, cashierId, paymentMethod, search } = body
+    const { startDate, endDate, barberId, cashierId, paymentMethod, search, page = 1, pageSize = 20 } = body
 
     if (!startDate || !endDate) {
       return handleValidationError("Start date and end date are required")
@@ -17,7 +17,9 @@ export async function POST(request: NextRequest) {
       barberId,
       cashierId,
       paymentMethod,
-      search
+      search,
+      page: Number(page),
+      pageSize: Number(pageSize)
     })
 
     return Response.json(transactions)
