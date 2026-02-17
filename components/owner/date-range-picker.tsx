@@ -54,11 +54,10 @@ export function DateRangePicker({
           variant={selectedRange === "today" ? "default" : "outline"}
           size="sm"
           onClick={() => handleRangeChange("today")}
-          className={`text-xs sm:text-sm ${
-            selectedRange === "today"
+          className={`text-xs sm:text-sm ${selectedRange === "today"
               ? "bg-yellow-500 text-black hover:bg-yellow-600"
               : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-800"
-          }`}
+            }`}
         >
           Hari Ini
         </Button>
@@ -66,11 +65,10 @@ export function DateRangePicker({
           variant={selectedRange === "week" ? "default" : "outline"}
           size="sm"
           onClick={() => handleRangeChange("week")}
-          className={`text-xs sm:text-sm ${
-            selectedRange === "week"
+          className={`text-xs sm:text-sm ${selectedRange === "week"
               ? "bg-yellow-500 text-black hover:bg-yellow-600"
               : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-800"
-          }`}
+            }`}
         >
           7 Hari
         </Button>
@@ -78,11 +76,10 @@ export function DateRangePicker({
           variant={selectedRange === "month" ? "default" : "outline"}
           size="sm"
           onClick={() => handleRangeChange("month")}
-          className={`text-xs sm:text-sm ${
-            selectedRange === "month"
+          className={`text-xs sm:text-sm ${selectedRange === "month"
               ? "bg-yellow-500 text-black hover:bg-yellow-600"
               : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-800"
-          }`}
+            }`}
         >
           30 Hari
         </Button>
@@ -90,11 +87,10 @@ export function DateRangePicker({
           variant={selectedRange === "custom" ? "default" : "outline"}
           size="sm"
           onClick={() => handleRangeChange("custom")}
-          className={`text-xs sm:text-sm ${
-            selectedRange === "custom"
+          className={`text-xs sm:text-sm ${selectedRange === "custom"
               ? "bg-yellow-500 text-black hover:bg-yellow-600"
               : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-800"
-          }`}
+            }`}
         >
           Custom
         </Button>
@@ -108,7 +104,7 @@ export function DateRangePicker({
               <Label className="text-xs">Mulai</Label>
               <Input
                 type="date"
-                value={customStartDate ? customStartDate.toISOString().split('T')[0] : ''}
+                value={customStartDate ? `${customStartDate.getFullYear()}-${String(customStartDate.getMonth() + 1).padStart(2, '0')}-${String(customStartDate.getDate()).padStart(2, '0')}` : ''}
                 onChange={handleStartDateChange}
                 className="border-0 text-xs sm:text-sm text-black dark:text-white focus:ring-0 bg-transparent h-8"
               />
@@ -118,7 +114,7 @@ export function DateRangePicker({
               <Label className="text-xs">Akhir</Label>
               <Input
                 type="date"
-                value={customEndDate ? customEndDate.toISOString().split('T')[0] : ''}
+                value={customEndDate ? `${customEndDate.getFullYear()}-${String(customEndDate.getMonth() + 1).padStart(2, '0')}-${String(customEndDate.getDate()).padStart(2, '0')}` : ''}
                 onChange={handleEndDateChange}
                 className="border-0 text-xs sm:text-sm text-black dark:text-white focus:ring-0 bg-transparent h-8"
               />

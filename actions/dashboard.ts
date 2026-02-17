@@ -379,9 +379,9 @@ async function fetchDashboardDataCore(
   const barberIds = barberCommissions.map(item => item.barberId)
   const barbers = barberIds.length
     ? await prisma.barber.findMany({
-        where: { id: { in: barberIds } },
-        select: { id: true, name: true }
-      })
+      where: { id: { in: barberIds } },
+      select: { id: true, name: true }
+    })
     : []
 
   const barberMap = new Map(barbers.map(b => [b.id, b.name]))
@@ -395,9 +395,9 @@ async function fetchDashboardDataCore(
   const serviceIds = topServices.map(item => item.serviceId).filter(Boolean) as string[]
   const services = serviceIds.length
     ? await prisma.service.findMany({
-        where: { id: { in: serviceIds } },
-        select: { id: true, name: true }
-      })
+      where: { id: { in: serviceIds } },
+      select: { id: true, name: true }
+    })
     : []
   const serviceMap = new Map(services.map(service => [service.id, service.name]))
 
@@ -410,9 +410,9 @@ async function fetchDashboardDataCore(
   const productIds = topProducts.map(item => item.productId).filter(Boolean) as string[]
   const products = productIds.length
     ? await prisma.product.findMany({
-        where: { id: { in: productIds } },
-        select: { id: true, name: true }
-      })
+      where: { id: { in: productIds } },
+      select: { id: true, name: true }
+    })
     : []
   const productMap = new Map(products.map(product => [product.id, product.name]))
 
@@ -477,8 +477,8 @@ export async function getDashboardData(params: z.infer<typeof getDashboardDataSc
   }
 
   const { startDate, endDate } = getDashboardDataSchema.parse(params)
-  const startDateStr = startDate.toISOString().split("T")[0]
-  const endDateStr = endDate.toISOString().split("T")[0]
+  const startDateStr = startDate.toISOString()
+  const endDateStr = endDate.toISOString()
 
   try {
     return await getCachedDashboardData(startDateStr, endDateStr)
@@ -630,9 +630,9 @@ export async function getTopServices(startDate: Date, endDate: Date, limit: numb
     const serviceIds = items.map(item => item.serviceId).filter(Boolean) as string[]
     const services = serviceIds.length
       ? await prisma.service.findMany({
-          where: { id: { in: serviceIds } },
-          select: { id: true, name: true }
-        })
+        where: { id: { in: serviceIds } },
+        select: { id: true, name: true }
+      })
       : []
 
     const serviceMap = new Map(services.map(service => [service.id, service.name]))
@@ -683,9 +683,9 @@ export async function getTopProducts(startDate: Date, endDate: Date, limit: numb
     const productIds = items.map(item => item.productId).filter(Boolean) as string[]
     const products = productIds.length
       ? await prisma.product.findMany({
-          where: { id: { in: productIds } },
-          select: { id: true, name: true }
-        })
+        where: { id: { in: productIds } },
+        select: { id: true, name: true }
+      })
       : []
 
     const productMap = new Map(products.map(product => [product.id, product.name]))
