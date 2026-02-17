@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.0'
+const CACHE_VERSION = 'v1.0.1'
 const CACHE_NAME = `barberbro-cache-${CACHE_VERSION}`
 const OFFLINE_URL = '/offline'
 
@@ -11,13 +11,6 @@ const STATIC_ASSETS = [
 const CACHE_STRATEGIES = {
   networkFirst: [
     '/api/',
-  ],
-  cacheFirst: [
-    '/_next/static/',
-    '/fonts/',
-    '/images/',
-  ],
-  staleWhileRevalidate: [
     '/',
     '/dashboard',
     '/pos',
@@ -29,6 +22,12 @@ const CACHE_STRATEGIES = {
     '/settings',
     '/transactions',
   ],
+  cacheFirst: [
+    '/_next/static/',
+    '/fonts/',
+    '/images/',
+  ],
+  staleWhileRevalidate: [],
 }
 
 function isNavigationRequest(request) {
@@ -141,8 +140,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const cache = caches.open(CACHE_NAME)
-          cache.then(c => c.put(request, response.clone()))
+          if (response.ok) {
+            const cache = caches.open(CACHE_NAME)
+            cache.then(c => c.put(request, response.clone()))
+          }
           return response
         })
         .catch(async () => {

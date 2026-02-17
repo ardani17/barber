@@ -14,6 +14,19 @@ export default function Error({
 }) {
   useEffect(() => {
     logError("ErrorBoundary", "Unhandled error", error)
+
+    // Auto-reload if chunk failure detected
+    const isChunkError =
+      error.message?.toLowerCase().includes("chunk") ||
+      error.message?.toLowerCase().includes("loading") ||
+      error.message?.toLowerCase().includes("failed to load");
+
+    if (isChunkError) {
+      const timer = setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
   }, [error])
 
   return (
@@ -41,7 +54,7 @@ export default function Error({
             <RefreshCw className="w-5 h-5" />
             Coba Lagi
           </button>
-          <Link 
+          <Link
             href="/"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-bold text-lg"
           >
@@ -56,7 +69,7 @@ export default function Error({
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             Hubungi BARBERBRO langsung untuk booking atau informasi layanan
           </p>
-          <a 
+          <a
             href="tel:+6281234567890"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold"
           >
