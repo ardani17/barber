@@ -264,7 +264,8 @@ export default function POSPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setTransactions(data)
+        // Handle paginated response format { data: [], pagination: {} }
+        setTransactions(data.data || [])
       }
     } catch (error) {
       logError("POS", "Gagal memuat transaksi", error)
@@ -538,527 +539,525 @@ export default function POSPage() {
       ) : (
         <>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
-          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg">
-            <CardHeader>
-              <div className="flex gap-2">
-                <Button
-                  variant={activeTab === "services" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveTab("services")}
-                  aria-label="Tab Layanan"
-                  className={
-                    activeTab === "services"
-                      ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
-                      : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
-                  }
-                >
-                  <Scissors className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Layanan</span>
-                </Button>
-                <Button
-                  variant={activeTab === "products" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveTab("products")}
-                  aria-label="Tab Produk"
-                  className={
-                    activeTab === "products"
-                      ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
-                      : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
-                  }
-                >
-                  <Package className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Produk</span>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
-                {activeTab === "services" &&
-                  services.map((service) => (
+          <div className="grid lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
+              <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg">
+                <CardHeader>
+                  <div className="flex gap-2">
                     <Button
-                      key={service.id}
-                      variant="outline"
-                      className="h-24 flex-col border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
-                      onClick={() => addItem({
-                        id: service.id,
-                        type: "service",
-                        name: service.name,
-                        price: parseFloat(service.price)
-                      })}
+                      variant={activeTab === "services" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveTab("services")}
+                      aria-label="Tab Layanan"
+                      className={
+                        activeTab === "services"
+                          ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                          : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
+                      }
                     >
-                      <span className="text-sm font-medium text-center">{service.name}</span>
-                      <span className="text-xs text-gray-600 mt-1">
-                        {formatCurrency(service.price)}
-                      </span>
+                      <Scissors className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Layanan</span>
                     </Button>
-                  ))}
-                {activeTab === "products" &&
-                  products.map((product) => (
                     <Button
-                      key={product.id}
-                      variant="outline"
-                      className="h-24 flex-col border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
-                      onClick={() => addItem({
-                        id: product.id,
-                        type: "product",
-                        name: product.name,
-                        price: parseFloat(product.price)
-                      })}
-                      disabled={product.stock === 0}
+                      variant={activeTab === "products" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveTab("products")}
+                      aria-label="Tab Produk"
+                      className={
+                        activeTab === "products"
+                          ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                          : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
+                      }
                     >
-                      <span className="text-sm font-medium text-center">{product.name}</span>
-                      <div className="flex flex-col items-center mt-1">
-                        <span className="text-xs text-gray-600">
-                          {formatCurrency(product.price)}
-                        </span>
-                        <span className="text-xs text-gray-500 mt-1">
-                          Stok: {product.stock}
-                        </span>
+                      <Package className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Produk</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 min-[375px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3">
+                    {activeTab === "services" &&
+                      services.map((service) => (
+                        <Button
+                          key={service.id}
+                          variant="outline"
+                          className="h-24 flex-col border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
+                          onClick={() => addItem({
+                            id: service.id,
+                            type: "service",
+                            name: service.name,
+                            price: parseFloat(service.price)
+                          })}
+                        >
+                          <span className="text-sm font-medium text-center">{service.name}</span>
+                          <span className="text-xs text-gray-600 mt-1">
+                            {formatCurrency(service.price)}
+                          </span>
+                        </Button>
+                      ))}
+                    {activeTab === "products" &&
+                      products.map((product) => (
+                        <Button
+                          key={product.id}
+                          variant="outline"
+                          className="h-24 flex-col border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
+                          onClick={() => addItem({
+                            id: product.id,
+                            type: "product",
+                            name: product.name,
+                            price: parseFloat(product.price)
+                          })}
+                          disabled={product.stock === 0}
+                        >
+                          <span className="text-sm font-medium text-center">{product.name}</span>
+                          <div className="flex flex-col items-center mt-1">
+                            <span className="text-xs text-gray-600">
+                              {formatCurrency(product.price)}
+                            </span>
+                            <span className="text-xs text-gray-500 mt-1">
+                              Stok: {product.stock}
+                            </span>
+                          </div>
+                        </Button>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-1 order-1 lg:order-2">
+              <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg sticky top-4 lg:top-20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-black dark:text-white text-lg sm:text-xl">
+                    <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                    <span className="hidden sm:inline">Cart</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {items.length === 0 ? (
+                    <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
+                      Keranjang kosong
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
+                        {items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm font-medium text-black dark:text-white truncate">
+                                {item.name}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {formatCurrency(item.price)} x {item.quantity}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-0.5 sm:gap-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 sm:h-6 sm:w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="text-xs sm:text-sm font-medium w-5 sm:w-6 text-center">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 sm:h-6 sm:w-6"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 sm:h-6 sm:w-6 text-red-500 hover:text-red-600"
+                                onClick={() => removeItem(item.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-3 sm:pt-4 space-y-2">
+                        <div className="flex justify-between text-base sm:text-lg font-bold">
+                          <span className="text-black dark:text-white">Total</span>
+                          <span className="text-yellow-500">
+                            {formatCurrency(getTotal())}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xs sm:text-sm font-medium text-black dark:text-white">Metode Pembayaran:</p>
+                        <div className="flex gap-1.5 sm:gap-2">
+                          <Button
+                            type="button"
+                            variant={selectedPaymentMethod === "TUNAI" ? "default" : "outline"}
+                            aria-label="Pembayaran Tunai"
+                            className={`flex-1 ${selectedPaymentMethod === "TUNAI"
+                                ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                                : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
+                              }`}
+                            onClick={() => setSelectedPaymentMethod("TUNAI")}
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Tunai</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={selectedPaymentMethod === "QRIS" ? "default" : "outline"}
+                            aria-label="Pembayaran QRIS"
+                            className={`flex-1 ${selectedPaymentMethod === "QRIS"
+                                ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                                : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
+                              }`}
+                            onClick={() => setSelectedPaymentMethod("QRIS")}
+                          >
+                            <Package className="h-4 w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">QRIS</span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Button
+                        className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 font-semibold text-sm sm:text-base"
+                        size="lg"
+                        onClick={handleCheckout}
+                        disabled={items.length === 0}
+                      >
+                        Checkout
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {showBarberSelector && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg sm:text-xl text-black dark:text-white">Pilih Barber</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 sm:space-y-3">
+                  {barbers.map((barber) => (
+                    <Button
+                      key={barber.id}
+                      variant="outline"
+                      className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white h-12 sm:h-auto"
+                      onClick={() => handleBarberSelect(barber)}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                        <span className="text-sm sm:text-base">{barber.name}</span>
                       </div>
                     </Button>
                   ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-sm sm:text-base"
+                    onClick={() => setShowBarberSelector(false)}
+                  >
+                    Batal
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-        <div className="lg:col-span-1 order-1 lg:order-2">
-          <Card className="bg-white dark:bg-gray-800 border-yellow-500 shadow-lg sticky top-4 lg:top-20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-black dark:text-white text-lg sm:text-xl">
-                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                <span className="hidden sm:inline">Cart</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {items.length === 0 ? (
-                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
-                  Keranjang kosong
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
+          {showCheckoutConfirm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-center text-black dark:text-white">
+                    <div className="text-xl sm:text-2xl font-bold mb-2">Konfirmasi Checkout</div>
+                    <div className="text-xs sm:text-sm font-normal text-red-500">
+                      Periksa kembali pesanan Anda sebelum melanjutkan
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="border-b border-gray-200 pb-3 sm:pb-4 space-y-2">
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Barber:</span>
+                      <span className="font-medium text-black dark:text-white">{selectedBarber?.name}</span>
+                    </div>
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Jumlah Item:</span>
+                      <span className="font-medium text-black dark:text-white">
+                        {items.reduce((acc, item) => acc + item.quantity, 0)} item
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
                     {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs sm:text-sm font-medium text-black dark:text-white truncate">
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {formatCurrency(item.price)} x {item.quantity}
-                          </p>
+                      <div key={item.id} className="flex justify-between text-xs sm:text-sm border-b border-gray-100 pb-2">
+                        <div className="flex-1">
+                          <span className="text-black dark:text-white">{item.name}</span>
+                          <div className="flex items-center gap-1 sm:gap-2 mt-1">
+                            <span className="text-xs text-gray-500">x{item.quantity}</span>
+                            {item.type === "service" && (
+                              <Badge variant="outline" className="text-xs">Layanan</Badge>
+                            )}
+                            {item.type === "product" && (
+                              <Badge variant="outline" className="text-xs">Produk</Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-0.5 sm:gap-1">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 sm:h-6 sm:w-6"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="text-xs sm:text-sm font-medium w-5 sm:w-6 text-center">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 sm:h-6 sm:w-6"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 sm:h-6 sm:w-6 text-red-500 hover:text-red-600"
-                            onClick={() => removeItem(item.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        <span className="font-medium text-black dark:text-white">
+                          {formatCurrency(String(item.price * item.quantity))}
+                        </span>
                       </div>
                     ))}
                   </div>
 
                   <div className="border-t border-gray-200 pt-3 sm:pt-4 space-y-2">
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Metode Pembayaran:</span>
+                      <span className="font-medium text-black dark:text-white">
+                        {selectedPaymentMethod === "TUNAI" ? "Tunai" : "QRIS"}
+                      </span>
+                    </div>
                     <div className="flex justify-between text-base sm:text-lg font-bold">
-                      <span className="text-black dark:text-white">Total</span>
+                      <span className="text-black dark:text-white">Total Pembayaran</span>
                       <span className="text-yellow-500">
                         {formatCurrency(getTotal())}
                       </span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-xs sm:text-sm font-medium text-black dark:text-white">Metode Pembayaran:</p>
-                    <div className="flex gap-1.5 sm:gap-2">
-                      <Button
-                        type="button"
-                        variant={selectedPaymentMethod === "TUNAI" ? "default" : "outline"}
-                        aria-label="Pembayaran Tunai"
-                        className={`flex-1 ${
-                          selectedPaymentMethod === "TUNAI"
-                            ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
-                            : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
-                        }`}
-                        onClick={() => setSelectedPaymentMethod("TUNAI")}
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Tunai</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={selectedPaymentMethod === "QRIS" ? "default" : "outline"}
-                        aria-label="Pembayaran QRIS"
-                        className={`flex-1 ${
-                          selectedPaymentMethod === "QRIS"
-                            ? "bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
-                            : "border-yellow-500 text-black dark:text-white hover:bg-yellow-100"
-                        }`}
-                        onClick={() => setSelectedPaymentMethod("QRIS")}
-                      >
-                        <Package className="h-4 w-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">QRIS</span>
-                      </Button>
-                    </div>
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-2 sm:p-3">
+                    <p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+                      Apakah data pesanan sudah benar?
+                    </p>
                   </div>
 
-                  <Button
-                    className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 font-semibold text-sm sm:text-base"
-                    size="lg"
-                    onClick={handleCheckout}
-                    disabled={items.length === 0}
-                  >
-                    Checkout
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {showBarberSelector && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl text-black dark:text-white">Pilih Barber</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 sm:space-y-3">
-              {barbers.map((barber) => (
-                <Button
-                  key={barber.id}
-                  variant="outline"
-                  className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white h-12 sm:h-auto"
-                  onClick={() => handleBarberSelect(barber)}
-                >
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                    <span className="text-sm sm:text-base">{barber.name}</span>
-                  </div>
-                </Button>
-              ))}
-              <Button
-                variant="ghost"
-                className="w-full text-sm sm:text-base"
-                onClick={() => setShowBarberSelector(false)}
-              >
-                Batal
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showCheckoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-center text-black dark:text-white">
-                <div className="text-xl sm:text-2xl font-bold mb-2">Konfirmasi Checkout</div>
-                <div className="text-xs sm:text-sm font-normal text-red-500">
-                  Periksa kembali pesanan Anda sebelum melanjutkan
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="border-b border-gray-200 pb-3 sm:pb-4 space-y-2">
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Barber:</span>
-                  <span className="font-medium text-black dark:text-white">{selectedBarber?.name}</span>
-                </div>
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Jumlah Item:</span>
-                  <span className="font-medium text-black dark:text-white">
-                    {items.reduce((acc, item) => acc + item.quantity, 0)} item
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-xs sm:text-sm border-b border-gray-100 pb-2">
-                    <div className="flex-1">
-                      <span className="text-black dark:text-white">{item.name}</span>
-                      <div className="flex items-center gap-1 sm:gap-2 mt-1">
-                        <span className="text-xs text-gray-500">x{item.quantity}</span>
-                        {item.type === "service" && (
-                          <Badge variant="outline" className="text-xs">Layanan</Badge>
-                        )}
-                        {item.type === "product" && (
-                          <Badge variant="outline" className="text-xs">Produk</Badge>
-                        )}
-                      </div>
-                    </div>
-                    <span className="font-medium text-black dark:text-white">
-                      {formatCurrency(String(item.price * item.quantity))}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-gray-200 pt-3 sm:pt-4 space-y-2">
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Metode Pembayaran:</span>
-                  <span className="font-medium text-black dark:text-white">
-                    {selectedPaymentMethod === "TUNAI" ? "Tunai" : "QRIS"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-base sm:text-lg font-bold">
-                  <span className="text-black dark:text-white">Total Pembayaran</span>
-                  <span className="text-yellow-500">
-                    {formatCurrency(getTotal())}
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-2 sm:p-3">
-                <p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                  Apakah data pesanan sudah benar?
-                </p>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 border-gray-300 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 text-sm sm:text-base"
-                  onClick={() => setShowCheckoutConfirm(false)}
-                  disabled={isProcessing}
-                >
-                  Periksa Ulang
-                </Button>
-                <Button
-                  className="flex-1 bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 text-sm sm:text-base"
-                  onClick={handleConfirmCheckout}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                      <span className="hidden sm:inline">Memproses...</span>
-                      <span className="sm:hidden">Memproses</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      Ya, Benar
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showReceipt && receiptData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-center text-black dark:text-white">
-                <div className="text-3xl font-bold mb-2">BARBERBRO</div>
-                <div className="text-sm font-normal text-green-500">Pembayaran Berhasil!</div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border-b border-gray-200 pb-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Barber:</span>
-                  <span className="font-medium text-black dark:text-white">{receiptData.barber?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tanggal:</span>
-                  <span className="font-medium text-black dark:text-white">
-                    {new Date(receiptData.date).toLocaleDateString("id-ID")}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Metode Pembayaran:</span>
-                  <span className="font-medium text-black dark:text-white">
-                    {receiptData.paymentMethod === "TUNAI" ? "Tunai" : "QRIS"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {receiptData.items.map((item: any) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-black dark:text-white">
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span className="font-medium text-black dark:text-white">
-                      {formatCurrency((parseFloat(item.price) * item.quantity).toString())}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-gray-200 pt-4 space-y-2">
-                <div className="flex justify-between text-lg font-bold">
-                  <span className="text-black dark:text-white">Total</span>
-                  <span className="text-yellow-500">
-                    {formatCurrency(receiptData.total)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
-                <p className="text-sm text-green-800 dark:text-green-200 font-medium text-center">
-                  Terima kasih telah berkunjung!
-                </p>
-              </div>
-
-              <Button
-                className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
-                onClick={() => {
-                  setShowReceipt(false)
-                  setReceiptData(null)
-                }}
-              >
-                Tutup
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showAttendance && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-black dark:text-white">Absen Capster</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Pilih Capster
-                </label>
-                <div className="space-y-2">
-                  {barbers.map((barber) => (
+                  <div className="flex gap-2">
                     <Button
-                      key={barber.id}
-                      variant={attendanceBarber?.id === barber.id ? "default" : "outline"}
-                      className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
-                      onClick={() => setAttendanceBarber(barber)}
+                      variant="outline"
+                      className="flex-1 border-gray-300 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 text-sm sm:text-base"
+                      onClick={() => setShowCheckoutConfirm(false)}
+                      disabled={isProcessing}
                     >
-                      <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-yellow-500" />
-                        <span>{barber.name}</span>
-                      </div>
+                      Periksa Ulang
                     </Button>
-                  ))}
-                </div>
-              </div>
+                    <Button
+                      className="flex-1 bg-yellow-500 text-black dark:text-white hover:bg-yellow-600 text-sm sm:text-base"
+                      onClick={handleConfirmCheckout}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
+                          <span className="hidden sm:inline">Memproses...</span>
+                          <span className="sm:hidden">Memproses</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Ya, Benar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Password Capster
-                </label>
-                <Input
-                  type="password"
-                  value={barberPassword}
-                  onChange={(e) => setBarberPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  disabled={attendanceLoading}
-                />
-              </div>
+          {showReceipt && receiptData && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-center text-black dark:text-white">
+                    <div className="text-3xl font-bold mb-2">BARBERBRO</div>
+                    <div className="text-sm font-normal text-green-500">Pembayaran Berhasil!</div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-b border-gray-200 pb-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Barber:</span>
+                      <span className="font-medium text-black dark:text-white">{receiptData.barber?.name}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tanggal:</span>
+                      <span className="font-medium text-black dark:text-white">
+                        {new Date(receiptData.date).toLocaleDateString("id-ID")}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Metode Pembayaran:</span>
+                      <span className="font-medium text-black dark:text-white">
+                        {receiptData.paymentMethod === "TUNAI" ? "Tunai" : "QRIS"}
+                      </span>
+                    </div>
+                  </div>
 
-              {attendanceError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
-                  <p className="text-sm text-red-800 dark:text-red-200">{attendanceError}</p>
-                </div>
-              )}
+                  <div className="space-y-2">
+                    {receiptData.items.map((item: any) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="text-black dark:text-white">
+                          {item.name} x{item.quantity}
+                        </span>
+                        <span className="font-medium text-black dark:text-white">
+                          {formatCurrency((parseFloat(item.price) * item.quantity).toString())}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
-              {attendanceSuccess && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
-                  <p className="text-sm text-green-800 dark:text-green-200">{attendanceSuccess}</p>
-                </div>
-              )}
+                  <div className="border-t border-gray-200 pt-4 space-y-2">
+                    <div className="flex justify-between text-lg font-bold">
+                      <span className="text-black dark:text-white">Total</span>
+                      <span className="text-yellow-500">
+                        {formatCurrency(receiptData.total)}
+                      </span>
+                    </div>
+                  </div>
 
-              {!attendanceSuccess && (
-                <div className="space-y-2">
-                  <Button
-                    className="w-full bg-green-600 text-white hover:bg-green-700"
-                    onClick={() => handleAttendance("CHECK_IN")}
-                    disabled={attendanceLoading || !attendanceBarber}
-                  >
-                    {attendanceLoading ? "Memproses..." : "Absen Masuk"}
-                  </Button>
-                  <Button
-                    className="w-full bg-red-600 text-white hover:bg-red-700"
-                    onClick={() => handleAttendance("CHECK_OUT")}
-                    disabled={attendanceLoading || !attendanceBarber}
-                  >
-                    {attendanceLoading ? "Memproses..." : "Absen Pulang"}
-                  </Button>
-                  <Button
-                    className="w-full bg-yellow-600 text-white hover:bg-yellow-700"
-                    onClick={() => handleAttendance("PERMISSION")}
-                    disabled={attendanceLoading || !attendanceBarber}
-                  >
-                    {attendanceLoading ? "Memproses..." : "Absen Izin"}
-                  </Button>
-                  <Button
-                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={() => handleAttendance("SICK")}
-                    disabled={attendanceLoading || !attendanceBarber}
-                  >
-                    {attendanceLoading ? "Memproses..." : "Absen Sakit"}
-                  </Button>
-                  <Button
-                    className="w-full bg-purple-600 text-white hover:bg-purple-700"
-                    onClick={() => handleAttendance("LEAVE")}
-                    disabled={attendanceLoading || !attendanceBarber}
-                  >
-                    {attendanceLoading ? "Memproses..." : "Absen Libur"}
-                  </Button>
-                </div>
-              )}
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                    <p className="text-sm text-green-800 dark:text-green-200 font-medium text-center">
+                      Terima kasih telah berkunjung!
+                    </p>
+                  </div>
 
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  setShowAttendance(false)
-                  setAttendanceBarber(null)
-                  setBarberPassword("")
-                  setAttendanceError(null)
-                  setAttendanceSuccess(null)
-                }}
-              >
-                Batal
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-      </>
+                  <Button
+                    className="w-full bg-yellow-500 text-black dark:text-white hover:bg-yellow-600"
+                    onClick={() => {
+                      setShowReceipt(false)
+                      setReceiptData(null)
+                    }}
+                  >
+                    Tutup
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {showAttendance && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <Card className="w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-black dark:text-white">Absen Capster</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Pilih Capster
+                    </label>
+                    <div className="space-y-2">
+                      {barbers.map((barber) => (
+                        <Button
+                          key={barber.id}
+                          variant={attendanceBarber?.id === barber.id ? "default" : "outline"}
+                          className="w-full justify-between border-yellow-500 hover:bg-yellow-100 text-black dark:text-white"
+                          onClick={() => setAttendanceBarber(barber)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <User className="h-5 w-5 text-yellow-500" />
+                            <span>{barber.name}</span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Password Capster
+                    </label>
+                    <Input
+                      type="password"
+                      value={barberPassword}
+                      onChange={(e) => setBarberPassword(e.target.value)}
+                      placeholder="Masukkan password"
+                      disabled={attendanceLoading}
+                    />
+                  </div>
+
+                  {attendanceError && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
+                      <p className="text-sm text-red-800 dark:text-red-200">{attendanceError}</p>
+                    </div>
+                  )}
+
+                  {attendanceSuccess && (
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                      <p className="text-sm text-green-800 dark:text-green-200">{attendanceSuccess}</p>
+                    </div>
+                  )}
+
+                  {!attendanceSuccess && (
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full bg-green-600 text-white hover:bg-green-700"
+                        onClick={() => handleAttendance("CHECK_IN")}
+                        disabled={attendanceLoading || !attendanceBarber}
+                      >
+                        {attendanceLoading ? "Memproses..." : "Absen Masuk"}
+                      </Button>
+                      <Button
+                        className="w-full bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => handleAttendance("CHECK_OUT")}
+                        disabled={attendanceLoading || !attendanceBarber}
+                      >
+                        {attendanceLoading ? "Memproses..." : "Absen Pulang"}
+                      </Button>
+                      <Button
+                        className="w-full bg-yellow-600 text-white hover:bg-yellow-700"
+                        onClick={() => handleAttendance("PERMISSION")}
+                        disabled={attendanceLoading || !attendanceBarber}
+                      >
+                        {attendanceLoading ? "Memproses..." : "Absen Izin"}
+                      </Button>
+                      <Button
+                        className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() => handleAttendance("SICK")}
+                        disabled={attendanceLoading || !attendanceBarber}
+                      >
+                        {attendanceLoading ? "Memproses..." : "Absen Sakit"}
+                      </Button>
+                      <Button
+                        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                        onClick={() => handleAttendance("LEAVE")}
+                        disabled={attendanceLoading || !attendanceBarber}
+                      >
+                        {attendanceLoading ? "Memproses..." : "Absen Libur"}
+                      </Button>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => {
+                      setShowAttendance(false)
+                      setAttendanceBarber(null)
+                      setBarberPassword("")
+                      setAttendanceError(null)
+                      setAttendanceSuccess(null)
+                    }}
+                  >
+                    Batal
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
