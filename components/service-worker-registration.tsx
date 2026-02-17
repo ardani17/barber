@@ -42,6 +42,7 @@ export function ServiceWorkerRegistration({
     try {
       const reg = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
+        updateViaCache: 'none',
       })
 
       setRegistration(reg)
