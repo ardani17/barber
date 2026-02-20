@@ -41,6 +41,7 @@ model Barber {
   salaryDebts       SalaryDebt[]
   salaryAdjustments SalaryAdjustment[]
   salaryPeriods     SalaryPeriod[]
+  expenses          Expense[]
 
   @@index([isActive])
   @@index([name])
@@ -154,9 +155,15 @@ model Expense {
   category  ExpenseCategory
   accountId String?
   account   CashAccount?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  barberId  String?
+  barber    Barber?          @relation(fields: [barberId], references: [id], onDelete: SetNull)
+  salaryDebtId String?       @unique
+  salaryDebt   SalaryDebt?   @relation("KasbonExpense", fields: [salaryDebtId], references: [id], onDelete: SetNull)
 
   @@index([date])
   @@index([accountId])
+  @@index([barberId])
+  @@index([salaryDebtId])
   @@index([category])
   @@index([date, category])
 }
@@ -242,6 +249,7 @@ enum ExpenseCategory {
   RENT
   UTILITIES
   SUPPLIES
+  KASBON
   OTHER
 }
 
@@ -287,6 +295,7 @@ model SalaryPayment {
   bankAccount       CashAccount?        @relation("SalaryBankAccount", fields: [bankAccountId], references: [id])
   qrisAccountId     String?
   qrisAccount       CashAccount?        @relation("SalaryQrisAccount", fields: [qrisAccountId], references: [id])
+  settledDebts      SalaryDebt[]        @relation("SalaryDebtSettlement")
   paymentDate       DateTime            @default(now())
   notes             String?
   createdAt         DateTime            @default(now())
@@ -296,15 +305,23 @@ model SalaryPayment {
   @@index([periodStart, periodEnd])
 }
 
+enum SalaryDebtType {
+  KASBON
+  OTHER
+}
+
 model SalaryDebt {
   id                String              @id @default(cuid())
   barberId          String
   barber            Barber              @relation(fields: [barberId], references: [id])
   amount            Decimal             @db.Decimal(10, 2)
   reason            String
+  type              SalaryDebtType      @default(OTHER)
   isPaid            Boolean             @default(false)
   paidDate          DateTime?
-  paymentId         String?
+  settledByPaymentId String?
+  settledByPayment  SalaryPayment?      @relation("SalaryDebtSettlement", fields: [settledByPaymentId], references: [id], onDelete: SetNull)
+  expense           Expense?            @relation("KasbonExpense")
   createdAt         DateTime            @default(now())
   paidAt            DateTime?
 

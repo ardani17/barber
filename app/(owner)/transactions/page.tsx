@@ -53,6 +53,7 @@ import {
 import {
   createExpense,
   updateExpense,
+  convertExpenseToKasbon,
   deleteExpense,
   getExpenses
 } from "@/actions/expenses"
@@ -91,17 +92,21 @@ interface Cashier {
 interface Expense {
   id: string
   date: Date
-  category: "RENT" | "UTILITIES" | "SUPPLIES" | "OTHER"
+  category: "RENT" | "UTILITIES" | "SUPPLIES" | "KASBON" | "OTHER"
   amount: string
   description: string
   accountId?: string | null
   accountName?: string | null
+  barberId?: string | null
+  barberName?: string | null
+  salaryDebtId?: string | null
 }
 
 const expenseCategories = [
   { label: "Sewa Kontrakan", value: "RENT" },
   { label: "Listrik/Air/Internet", value: "UTILITIES" },
   { label: "Peralatan/Perlengkapan", value: "SUPPLIES" },
+  { label: "Kasbon", value: "KASBON" },
   { label: "Lainnya", value: "OTHER" }
 ]
 
@@ -157,17 +162,19 @@ export default function TransactionsPage() {
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [expenseForm, setExpenseForm] = useState<{
-    category: "RENT" | "UTILITIES" | "SUPPLIES" | "OTHER"
+    category: "RENT" | "UTILITIES" | "SUPPLIES" | "KASBON" | "OTHER"
     amount: string
     description: string
     date: Date
     accountId: string
+    barberId: string
   }>({
     category: "RENT",
     amount: "",
     description: "",
     date: new Date(),
-    accountId: ""
+    accountId: "",
+    barberId: ""
   })
   const [cashAccounts, setCashAccounts] = useState<Array<{ id: string; name: string; type: string; balance: string; isActive: boolean }>>([])
   const [expenseSearchQuery, setExpenseSearchQuery] = useState("")
@@ -386,19 +393,25 @@ export default function TransactionsPage() {
       amount: "",
       description: "",
       date: new Date(),
-      accountId: ""
+      accountId: "",
+      barberId: ""
     })
     setExpenseModalOpen(true)
   }
 
   const openEditExpenseModal = (expense: Expense) => {
+    if (expense.category === "KASBON" && expense.salaryDebtId) {
+      alert("Kasbon tidak bisa diedit. Jika ada kesalahan, buat pembatalan terpisah.")
+      return
+    }
     setEditingExpense(expense)
     setExpenseForm({
       category: expense.category,
       amount: expense.amount,
       description: expense.description,
       date: expense.date,
-      accountId: expense.accountId || ""
+      accountId: expense.accountId || "",
+      barberId: expense.barberId || ""
     })
     setExpenseModalOpen(true)
   }
@@ -409,8 +422,26 @@ export default function TransactionsPage() {
       return
     }
 
+    if (expenseForm.category === "KASBON") {
+      if (!expenseForm.barberId) {
+        alert("Pilih barber untuk kasbon")
+        return
+      }
+      if (!expenseForm.accountId) {
+        alert("Pilih akun kas untuk kasbon")
+        return
+      }
+    }
+
     try {
       if (editingExpense) {
+        if (expenseForm.category === "KASBON") {
+          await convertExpenseToKasbon({
+            expenseId: editingExpense.id,
+            barberId: expenseForm.barberId
+          })
+          alert("Pengeluaran berhasil dikonversi menjadi kasbon")
+        } else {
         await updateExpense({
           id: editingExpense.id,
           title: expenseForm.description,
@@ -420,13 +451,15 @@ export default function TransactionsPage() {
           accountId: expenseForm.accountId || undefined
         })
         alert("Pengeluaran berhasil diperbarui")
+        }
       } else {
         await createExpense({
           title: expenseForm.description,
           amount: expenseForm.amount,
           category: expenseForm.category,
           date: expenseForm.date,
-          accountId: expenseForm.accountId || undefined
+          accountId: expenseForm.accountId || undefined,
+          barberId: expenseForm.category === "KASBON" ? expenseForm.barberId : undefined
         })
         alert("Pengeluaran berhasil ditambahkan")
       }
@@ -438,12 +471,13 @@ export default function TransactionsPage() {
         amount: "",
         description: "",
         date: new Date(),
-        accountId: ""
+        accountId: "",
+        barberId: ""
       })
       loadExpenses()
     } catch (error) {
       logError("Transactions", "Gagal menyimpan pengeluaran", error)
-      alert("Gagal menyimpan pengeluaran")
+      alert(error instanceof Error ? error.message : "Gagal menyimpan pengeluaran")
     }
   }
 
@@ -458,7 +492,7 @@ export default function TransactionsPage() {
       loadExpenses()
     } catch (error) {
       logError("Transactions", "Error deleting expense", error)
-      alert("Gagal menghapus pengeluaran")
+      alert(error instanceof Error ? error.message : "Gagal menghapus pengeluaran")
     }
   }
 
@@ -952,7 +986,9 @@ export default function TransactionsPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-xs sm:text-sm">
-                                {expense.description}
+                                {expense.category === "KASBON" && expense.barberName
+                                  ? `${expense.description} (${expense.barberName})`
+                                  : expense.description}
                               </TableCell>
                               <TableCell className="text-right font-medium text-xs sm:text-sm text-red-600">
                                 {formatCurrency(expense.amount)}
@@ -964,6 +1000,7 @@ export default function TransactionsPage() {
                                     size="sm"
                                     onClick={() => openEditExpenseModal(expense)}
                                     className="h-8 w-8 p-0"
+                                    disabled={expense.category === "KASBON" && !!expense.salaryDebtId}
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
@@ -971,10 +1008,15 @@ export default function TransactionsPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => {
+                                      if (expense.category === "KASBON") {
+                                        alert("Kasbon tidak bisa dihapus. Buat pembatalan terpisah bila diperlukan.")
+                                        return
+                                      }
                                       setDeletingExpense(expense)
                                       setDeleteDialogOpen(true)
                                     }}
                                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                    disabled={expense.category === "KASBON"}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -995,6 +1037,9 @@ export default function TransactionsPage() {
                                 {getCategoryLabel(expense.category)}
                               </Badge>
                               <p className="text-sm font-medium truncate">{expense.description}</p>
+                              {expense.category === "KASBON" && expense.barberName && (
+                                <p className="text-xs text-muted-foreground truncate">{expense.barberName}</p>
+                              )}
                               <p className="text-xs text-muted-foreground mt-1">{formatDate(expense.date)}</p>
                             </div>
                             <p className="text-sm font-bold text-red-600 shrink-0">{formatCurrency(expense.amount)}</p>
@@ -1005,6 +1050,7 @@ export default function TransactionsPage() {
                               size="sm"
                               onClick={() => openEditExpenseModal(expense)}
                               className="h-8 w-8 p-0"
+                              disabled={expense.category === "KASBON" && !!expense.salaryDebtId}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -1012,10 +1058,15 @@ export default function TransactionsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
+                                if (expense.category === "KASBON") {
+                                  alert("Kasbon tidak bisa dihapus. Buat pembatalan terpisah bila diperlukan.")
+                                  return
+                                }
                                 setDeletingExpense(expense)
                                 setDeleteDialogOpen(true)
                               }}
                               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              disabled={expense.category === "KASBON"}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1199,11 +1250,17 @@ export default function TransactionsPage() {
                 type="date"
                 value={expenseForm.date ? expenseForm.date.toISOString().split("T")[0] : ""}
                 onChange={(e) => setExpenseForm({ ...expenseForm, date: new Date(e.target.value) })}
+                disabled={!!editingExpense && expenseForm.category === "KASBON"}
               />
             </div>
             <div>
               <Label htmlFor="expenseCategory">Kategori</Label>
-              <Select value={expenseForm.category} onValueChange={(value: "RENT" | "UTILITIES" | "SUPPLIES" | "OTHER") => setExpenseForm({ ...expenseForm, category: value })}>
+              <Select
+                value={expenseForm.category}
+                onValueChange={(value: "RENT" | "UTILITIES" | "SUPPLIES" | "KASBON" | "OTHER") =>
+                  setExpenseForm({ ...expenseForm, category: value })
+                }
+              >
                 <SelectTrigger id="expenseCategory">
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
@@ -1220,7 +1277,7 @@ export default function TransactionsPage() {
               <Label htmlFor="expenseAccount">Akun Kas</Label>
               <Select value={expenseForm.accountId} onValueChange={(value: string) => setExpenseForm({ ...expenseForm, accountId: value })}>
                 <SelectTrigger id="expenseAccount">
-                  <SelectValue placeholder="Pilih akun kas (opsional)" />
+                  <SelectValue placeholder={expenseForm.category === "KASBON" ? "Pilih akun kas *" : "Pilih akun kas (opsional)"} />
                 </SelectTrigger>
                 <SelectContent>
                   {cashAccounts.filter(acc => acc.isActive).map((account) => (
@@ -1231,6 +1288,23 @@ export default function TransactionsPage() {
                 </SelectContent>
               </Select>
             </div>
+            {expenseForm.category === "KASBON" && (
+              <div>
+                <Label>Barber</Label>
+                <Select value={expenseForm.barberId} onValueChange={(value: string) => setExpenseForm({ ...expenseForm, barberId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih barber *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {barbers.filter(b => b.name && b.id).map((barber) => (
+                      <SelectItem key={barber.id} value={barber.id}>
+                        {barber.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <Label htmlFor="expenseAmount">Jumlah</Label>
               <Input
@@ -1239,6 +1313,7 @@ export default function TransactionsPage() {
                 placeholder="Masukkan jumlah"
                 value={expenseForm.amount}
                 onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                disabled={!!editingExpense && expenseForm.category === "KASBON"}
               />
             </div>
             <div>
@@ -1248,6 +1323,7 @@ export default function TransactionsPage() {
                 placeholder="Masukkan deskripsi"
                 value={expenseForm.description}
                 onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                disabled={!!editingExpense && expenseForm.category === "KASBON"}
               />
             </div>
           </div>
@@ -1256,7 +1332,7 @@ export default function TransactionsPage() {
               Batal
             </Button>
             <Button onClick={handleExpenseSubmit}>
-              {editingExpense ? "Simpan" : "Tambah"}
+              {editingExpense ? (expenseForm.category === "KASBON" ? "Konversi" : "Simpan") : "Tambah"}
             </Button>
           </DialogFooter>
         </DialogContent>

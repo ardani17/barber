@@ -242,6 +242,14 @@ export default function SalariesPage() {
     try {
       const detail = await getPeriodSalaryDetail(barberId, new Date(period.startDate), new Date(period.endDate))
       setPeriodSalaryDetail(detail)
+      const kasbonOutstanding = debts
+        .filter(d => d.barberId === barberId && !d.isPaid && d.type === 'KASBON')
+        .reduce((sum, d) => sum + parseFloat(d.amount), 0)
+      const netPayable = Math.max(parseFloat(detail.totalShouldPay) - kasbonOutstanding, 0)
+      setPaymentFormData(prev => ({
+        ...prev,
+        tunaiAmount: netPayable.toFixed(0)
+      }))
       setPaymentModalOpen(true)
     } catch (error) {
       logError('Salaries', 'Gagal mengambil rincian gaji', error)
@@ -256,9 +264,19 @@ export default function SalariesPage() {
     const bankAmount = parseFloat(paymentFormData.bankAmount || '0')
     const qrisAmount = parseFloat(paymentFormData.qrisAmount || '0')
     const totalPayment = tunaiAmount + bankAmount + qrisAmount
+    const bonusAmount = parseFloat(paymentFormData.bonusAmount || '0')
+    const deductionAmount = parseFloat(paymentFormData.deductionAmount || '0')
 
-    if (totalPayment <= 0) {
-      alert('Total pembayaran harus lebih dari 0')
+    const kasbonOutstanding = debts
+      .filter(d => d.barberId === paymentFormData.barberId && !d.isPaid && d.type === 'KASBON')
+      .reduce((sum, d) => sum + parseFloat(d.amount), 0)
+
+    const baseShouldPay = periodSalaryDetail ? parseFloat(periodSalaryDetail.totalShouldPay) : 0
+    const grossPayable = baseShouldPay + bonusAmount - deductionAmount
+    const netPayable = Math.max(grossPayable - kasbonOutstanding, 0)
+
+    if (Math.abs(totalPayment - netPayable) > 0.0001) {
+      alert(`Total pembayaran harus sama dengan gaji bersih setelah potong kasbon: ${formatCurrency(netPayable)}`)
       return
     }
 
@@ -699,6 +717,36 @@ export default function SalariesPage() {
             </div>
           ) : periodSalaryDetail ? (
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 sm:p-4 space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+              {(() => {
+                const kasbonOutstanding = debts
+                  .filter(d => d.barberId === paymentFormData.barberId && !d.isPaid && d.type === 'KASBON')
+                  .reduce((sum, d) => sum + parseFloat(d.amount), 0)
+                const bonusAmount = parseFloat(paymentFormData.bonusAmount || '0')
+                const deductionAmount = parseFloat(paymentFormData.deductionAmount || '0')
+                const grossPayable = parseFloat(periodSalaryDetail.totalShouldPay) + bonusAmount - deductionAmount
+                const netPayable = Math.max(grossPayable - kasbonOutstanding, 0)
+
+                return (
+                  <>
+                    {kasbonOutstanding > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Kasbon Outstanding:</span>
+                        <span className="text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400">
+                          -{formatCurrency(kasbonOutstanding)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="border-t border-gray-300 dark:border-gray-600 pt-2 sm:pt-3 mt-2 sm:mt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs sm:text-base font-semibold text-gray-900 dark:text-white">Total bersih:</span>
+                        <span className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400">
+                          {formatCurrency(netPayable)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
               <div className="flex justify-between items-center">
                 <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Gaji Pokok:</span>
                 <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
@@ -729,7 +777,7 @@ export default function SalariesPage() {
               )}
               <div className="border-t border-gray-300 dark:border-gray-600 pt-2 sm:pt-3 mt-2 sm:mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-base font-semibold text-gray-900 dark:text-white">Total yang harus dibayar:</span>
+                  <span className="text-xs sm:text-base font-semibold text-gray-900 dark:text-white">Total sebelum kasbon:</span>
                   <span className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400">
                     {formatCurrency(periodSalaryDetail.totalShouldPay)}
                   </span>
@@ -933,7 +981,7 @@ export default function SalariesPage() {
             <Button variant="outline" onClick={() => setPaymentModalOpen(false)} disabled={paying} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               Batal
             </Button>
-            <Button onClick={handleSubmitPayment} disabled={paying || (!paymentFormData.tunaiAmount && !paymentFormData.bankAmount && !paymentFormData.qrisAmount)} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
+            <Button onClick={handleSubmitPayment} disabled={paying} className="h-8 sm:h-auto px-2 sm:px-4 text-xs sm:text-sm">
               {paying ? 'Memproses...' : 'Bayar Gaji'}
             </Button>
           </DialogFooter>

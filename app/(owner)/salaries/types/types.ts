@@ -38,6 +38,7 @@ export interface SalaryDebt {
   barberName: string
   amount: string
   reason: string
+  type: 'KASBON' | 'OTHER'
   isPaid: boolean
   paidDate: Date | null
   createdAt: Date

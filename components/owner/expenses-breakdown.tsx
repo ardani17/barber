@@ -14,6 +14,7 @@ const ExpensesBreakdownComponent = ({ categories, loading }: ExpensesBreakdownPr
     RENT: "🏠",
     UTILITIES: "💡",
     SUPPLIES: "📦",
+    KASBON: "💸",
     OTHER: "📋"
   }
 

@@ -13,6 +13,7 @@ const expenseCategoryLabels: Record<string, string> = {
   RENT: "Sewa Kontrakan",
   UTILITIES: "Utilitas",
   SUPPLIES: "Perlengkapan",
+  KASBON: "Kasbon",
   OTHER: "Lainnya"
 }
 

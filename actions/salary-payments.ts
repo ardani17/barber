@@ -138,10 +138,6 @@ export async function paySalary(params: z.infer<typeof paySalarySchema>) {
   const deductionAmountDecimal = new Decimal(deductionAmount || "0")
   const totalPaymentDecimal = tunaiAmountDecimal.plus(bankAmountDecimal).plus(qrisAmountDecimal)
 
-  if (totalPaymentDecimal.lte(0)) {
-    throw new Error("Total pembayaran harus lebih dari 0")
-  }
-
   try {
     const salaryReport = await getBarberSalaryReport(barberId, periodStart, periodEnd)
 
@@ -166,6 +162,38 @@ export async function paySalary(params: z.infer<typeof paySalarySchema>) {
 
     const totalBonus = existingBonus.plus(bonusAmountDecimal)
     const totalDeduction = existingDeduction.plus(deductionAmountDecimal)
+
+    const grossSalary = new Decimal(salaryReport.totalSalary || "0")
+    const grossPayable = grossSalary.plus(totalBonus).minus(totalDeduction)
+
+    if (grossPayable.lt(0)) {
+      throw new Error("Total gaji tidak valid (bonus/potongan melebihi gaji)")
+    }
+
+    const kasbonDebts = await prisma.salaryDebt.findMany({
+      where: {
+        barberId,
+        isPaid: false,
+        type: "KASBON"
+      },
+      orderBy: {
+        createdAt: "asc"
+      }
+    })
+
+    const totalKasbon = kasbonDebts.reduce((sum, d) => sum.plus(d.amount), new Decimal(0))
+    const netPayable = Decimal.max(grossPayable.minus(totalKasbon), new Decimal(0))
+    const settlementBudget = Decimal.min(totalKasbon, grossPayable)
+
+    if (netPayable.equals(0) && settlementBudget.equals(0)) {
+      throw new Error("Total pembayaran harus lebih dari 0")
+    }
+
+    if (!totalPaymentDecimal.equals(netPayable)) {
+      throw new Error(
+        `Total pembayaran harus sama dengan gaji bersih setelah potong kasbon. Gaji bersih: ${netPayable.toFixed(0)}`
+      )
+    }
 
     if (tunaiAmountDecimal.gt(0) && !tunaiAccountId) {
       throw new Error("Akun tunai diperlukan untuk pembayaran tunai")
@@ -282,6 +310,47 @@ export async function paySalary(params: z.infer<typeof paySalarySchema>) {
         notes
       }
     })
+
+    if (settlementBudget.gt(0)) {
+      await prisma.$transaction(async (tx) => {
+        let remaining = settlementBudget
+        const now = new Date()
+
+        for (const debt of kasbonDebts) {
+          if (remaining.lte(0)) {
+            break
+          }
+
+          const debtAmount = new Decimal(debt.amount)
+
+          if (remaining.gte(debtAmount)) {
+            remaining = remaining.minus(debtAmount)
+            await tx.salaryDebt.update({
+              where: { id: debt.id },
+              data: {
+                amount: new Decimal(0),
+                isPaid: true,
+                paidAt: now,
+                paidDate: now,
+                settledByPaymentId: payment.id
+              }
+            })
+            continue
+          }
+
+          const newRemainingDebt = debtAmount.minus(remaining)
+          remaining = new Decimal(0)
+
+          await tx.salaryDebt.update({
+            where: { id: debt.id },
+            data: {
+              amount: newRemainingDebt
+            }
+          })
+          break
+        }
+      })
+    }
 
     revalidatePath("/owner/salaries")
     revalidatePath("/owner/cashflow")
@@ -433,6 +502,7 @@ export async function getSalaryDebts(barberId?: string, showPaid: boolean = fals
       barberName: debt.barber.name,
       amount: debt.amount.toString(),
       reason: debt.reason,
+      type: debt.type,
       isPaid: debt.isPaid,
       paidDate: debt.paidAt,
       createdAt: debt.createdAt

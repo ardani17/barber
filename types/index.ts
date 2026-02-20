@@ -4,7 +4,7 @@ export type UserRole = "OWNER" | "CASHIER"
 export type CompensationType = "BASE_ONLY" | "COMMISSION_ONLY" | "BOTH"
 export type PaymentMethod = "CASH" | "CARD" | "E_WALLET"
 export type TransactionItemType = "SERVICE" | "PRODUCT"
-export type ExpenseCategory = "RENT" | "UTILITIES" | "SUPPLIES" | "OTHER"
+export type ExpenseCategory = "RENT" | "UTILITIES" | "SUPPLIES" | "KASBON" | "OTHER"
 export type DateRangeType = "today" | "week" | "month" | "custom"
 
 export interface User {
