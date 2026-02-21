@@ -13,7 +13,15 @@ export function ChunkErrorListener() {
         /missing from the server/.test(error?.toString())
       ) {
         console.error('Chunk load error detected, reloading page...', error)
-        window.location.reload()
+        
+        // Cek apakah baru saja reload untuk menghindari loop
+        const lastReload = sessionStorage.getItem('chunk_reload_ts')
+        const now = Date.now()
+        
+        if (!lastReload || now - parseInt(lastReload) > 10000) {
+           sessionStorage.setItem('chunk_reload_ts', String(now))
+           window.location.reload()
+        }
       }
     }
 
@@ -30,7 +38,15 @@ export function ChunkErrorListener() {
         /missing from the server/.test(error?.toString())
       ) {
         console.error('Chunk load promise rejection detected, reloading page...', error)
-        window.location.reload()
+        
+        // Cek apakah baru saja reload untuk menghindari loop
+        const lastReload = sessionStorage.getItem('chunk_reload_ts')
+        const now = Date.now()
+        
+        if (!lastReload || now - parseInt(lastReload) > 10000) {
+           sessionStorage.setItem('chunk_reload_ts', String(now))
+           window.location.reload()
+        }
       }
     }
     

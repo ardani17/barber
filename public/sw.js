@@ -1,9 +1,8 @@
-const CACHE_VERSION = 'v1.0.3'
+const CACHE_VERSION = 'v1.0.4'
 const CACHE_NAME = `barberbro-cache-${CACHE_VERSION}`
 const OFFLINE_URL = '/offline'
 
 const STATIC_ASSETS = [
-  '/',
   '/offline',
   '/favicon.ico',
 ]
@@ -23,7 +22,6 @@ const CACHE_STRATEGIES = {
     '/transactions',
   ],
   cacheFirst: [
-    '/_next/static/',
     '/fonts/',
     '/images/',
   ],
@@ -137,6 +135,10 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+function isNextStatic(url) {
+  return url.pathname.startsWith('/_next/static/')
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
@@ -145,6 +147,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // 1. Navigation (HTML) -> NetworkFirst
   if (isNavigationRequest(request)) {
     event.respondWith(
       networkFirstStrategy(request)
@@ -159,25 +162,29 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // 2. API -> NetworkFirst
   if (isApiRequest(url)) {
     event.respondWith(networkFirstStrategy(request))
     return
   }
 
+  // 3. Static Assets (Images/Fonts) -> CacheFirst
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirstStrategy(request))
     return
   }
-
-  if (isStaleWhileRevalidate(url)) {
-    event.respondWith(staleWhileRevalidateStrategy(request))
-    return
+  
+  // 4. Next.js Static Files (_next/static) -> NETWORK ONLY (Let Browser Handle It)
+  if (isNextStatic(url)) {
+    return; // Fallback to browser default fetch
   }
 
+  // 5. Default -> StaleWhileRevalidate / Network First with Cache Fallback
   event.respondWith(
     fetch(request)
       .then(response => {
-        if (response.ok && request.method === 'GET') {
+        // Cache valid GET requests
+        if (response.ok && request.method === 'GET' && !isNextStatic(url)) {
           const cache = caches.open(CACHE_NAME)
           cache.then(c => c.put(request, response.clone()))
         }
