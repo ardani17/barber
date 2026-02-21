@@ -917,7 +917,7 @@ export default function CashflowPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactions.map((transaction) => {
+                      {filteredTransactions.map((transaction) => {
                         const isIncome = transaction.isIncome
                         const sourceLabel = {
                           CASH_TRANSACTION: "Kas",
