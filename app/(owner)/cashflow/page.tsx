@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { logError } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Wallet, ArrowRightLeft, Plus, Edit, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Building2, Smartphone, Banknote } from "lucide-react"
+import { Wallet, ArrowRightLeft, Plus, Edit, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Building2, Smartphone, Banknote, Filter, X } from "lucide-react"
 import { formatCurrency } from "@/lib/decimal"
 import {
   createCashAccount,
@@ -97,7 +97,10 @@ interface UnifiedTransaction {
   description: string
   type: string
   source: TransactionSource
+  accountId?: string
   accountName?: string
+  fromAccountId?: string
+  toAccountId?: string
   fromAccountName?: string
   toAccountName?: string
   barberName?: string
@@ -142,6 +145,15 @@ export default function CashflowPage() {
     toAccountId: "",
     amount: "",
     description: ""
+  })
+
+  const [transactionFilter, setTransactionFilter] = useState({
+    source: "ALL" as "ALL" | TransactionSource,
+    type: "ALL" as string,
+    accountId: "ALL",
+    dateFrom: "",
+    dateTo: "",
+    search: ""
   })
 
   useEffect(() => {
@@ -329,6 +341,59 @@ export default function CashflowPage() {
   }
 
   const totalBalance = summary ? parseFloat(summary.totalBalance) : 0
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      if (transactionFilter.source !== "ALL" && t.source !== transactionFilter.source) return false
+      
+      if (transactionFilter.type !== "ALL") {
+        if (transactionFilter.type === "INCOME" && !t.isIncome) return false
+        if (transactionFilter.type === "EXPENSE" && t.isIncome) return false
+        if (!["INCOME", "EXPENSE"].includes(transactionFilter.type) && t.type !== transactionFilter.type) return false
+      }
+      
+      if (transactionFilter.accountId !== "ALL") {
+        const isTransfer = t.source === "CASH_TRANSACTION" && t.type === "TRANSFER"
+        if (isTransfer) {
+          if (t.fromAccountId !== transactionFilter.accountId && t.toAccountId !== transactionFilter.accountId) return false
+        } else {
+          if (t.accountId !== transactionFilter.accountId) return false
+        }
+      }
+      
+      if (transactionFilter.dateFrom && new Date(t.date) < new Date(transactionFilter.dateFrom)) return false
+      if (transactionFilter.dateTo && new Date(t.date) > new Date(transactionFilter.dateTo + "T23:59:59")) return false
+      
+      if (transactionFilter.search) {
+        const searchLower = transactionFilter.search.toLowerCase()
+        const matchDesc = t.description?.toLowerCase().includes(searchLower)
+        const matchAccount = t.accountName?.toLowerCase().includes(searchLower)
+        const matchBarber = t.barberName?.toLowerCase().includes(searchLower)
+        if (!matchDesc && !matchAccount && !matchBarber) return false
+      }
+      
+      return true
+    })
+  }, [transactions, transactionFilter])
+
+  const clearFilters = () => {
+    setTransactionFilter({
+      source: "ALL",
+      type: "ALL",
+      accountId: "ALL",
+      dateFrom: "",
+      dateTo: "",
+      search: ""
+    })
+  }
+
+  const hasActiveFilters = 
+    transactionFilter.source !== "ALL" ||
+    transactionFilter.type !== "ALL" ||
+    transactionFilter.accountId !== "ALL" ||
+    transactionFilter.dateFrom !== "" ||
+    transactionFilter.dateTo !== "" ||
+    transactionFilter.search !== ""
 
   return (
     <div className="min-h-screen bg-muted p-3 sm:p-4 md:p-6 lg:p-8">
@@ -710,8 +775,121 @@ export default function CashflowPage() {
               </div>
             </div>
 
+            <Card className="shadow-sm">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Filter Transaksi</span>
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="text-xs">
+                      {filteredTransactions.length} dari {transactions.length}
+                    </Badge>
+                  )}
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2 text-xs ml-auto">
+                      <X className="h-3 w-3 mr-1" />
+                      Reset
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Cari</Label>
+                    <Input
+                      placeholder="Deskripsi/akun..."
+                      value={transactionFilter.search}
+                      onChange={(e) => setTransactionFilter({ ...transactionFilter, search: e.target.value })}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Sumber</Label>
+                    <Select
+                      value={transactionFilter.source}
+                      onValueChange={(v) => setTransactionFilter({ ...transactionFilter, source: v as "ALL" | TransactionSource })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Semua Sumber</SelectItem>
+                        <SelectItem value="POS_TRANSACTION">Penjualan</SelectItem>
+                        <SelectItem value="EXPENSE">Pengeluaran</SelectItem>
+                        <SelectItem value="CASH_TRANSACTION">Transaksi Kas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Tipe</Label>
+                    <Select
+                      value={transactionFilter.type}
+                      onValueChange={(v) => setTransactionFilter({ ...transactionFilter, type: v })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Semua Tipe</SelectItem>
+                        <SelectItem value="INCOME">Pemasukan</SelectItem>
+                        <SelectItem value="EXPENSE">Pengeluaran</SelectItem>
+                        <SelectItem value="DEPOSIT">Deposit</SelectItem>
+                        <SelectItem value="WITHDRAW">Withdraw</SelectItem>
+                        <SelectItem value="TRANSFER">Transfer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Akun Kas</Label>
+                    <Select
+                      value={transactionFilter.accountId}
+                      onValueChange={(v) => setTransactionFilter({ ...transactionFilter, accountId: v })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Semua Akun</SelectItem>
+                        {accounts.filter(a => a.isActive).map(account => (
+                          <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Dari Tanggal</Label>
+                    <Input
+                      type="date"
+                      value={transactionFilter.dateFrom}
+                      onChange={(e) => setTransactionFilter({ ...transactionFilter, dateFrom: e.target.value })}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Sampai Tanggal</Label>
+                    <Input
+                      type="date"
+                      value={transactionFilter.dateTo}
+                      onChange={(e) => setTransactionFilter({ ...transactionFilter, dateTo: e.target.value })}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {loading ? (
               <div className="text-center py-6 sm:py-8 text-xs sm:text-sm">Loading...</div>
+            ) : filteredTransactions.length === 0 && transactions.length > 0 ? (
+              <Card>
+                <CardContent className="text-center py-8 sm:py-12 px-3 sm:px-6">
+                  <Filter className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <p className="text-muted-foreground mb-3 sm:mb-4 text-xs sm:text-sm">Tidak ada transaksi yang cocok dengan filter</p>
+                  <Button onClick={clearFilters} variant="outline" className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm">
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Reset Filter
+                  </Button>
+                </CardContent>
+              </Card>
             ) : transactions.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-8 sm:py-12 px-3 sm:px-6">
@@ -734,7 +912,8 @@ export default function CashflowPage() {
                         <TableHead className="text-xs sm:text-xs">Sumber</TableHead>
                         <TableHead className="text-xs sm:text-xs hidden sm:table-cell">Tipe</TableHead>
                         <TableHead className="text-xs sm:text-xs">Deskripsi</TableHead>
-                        <TableHead className="text-xs sm:text-xs">Jumlah</TableHead>
+                        <TableHead className="text-xs sm:text-xs">Akun Kas</TableHead>
+                        <TableHead className="text-xs sm:text-xs text-right">Jumlah</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -757,11 +936,6 @@ export default function CashflowPage() {
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">{sourceLabel}</Badge>
-                              {transaction.accountName && (
-                                <div className="text-xs sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                                  {transaction.accountName}
-                                </div>
-                              )}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
                               <Badge variant={isIncome ? "default" : "destructive"} className="text-xs sm:text-xs px-1.5 sm:px-2 py-0 sm:py-1">
@@ -769,7 +943,17 @@ export default function CashflowPage() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs sm:text-xs truncate max-w-[100px] sm:max-w-[200px]">{transaction.description}</TableCell>
-                            <TableCell className={`font-bold text-xs sm:text-xs ${isIncome ? "text-green-600" : "text-red-600"}`}>
+                            <TableCell className="text-xs sm:text-xs text-muted-foreground">
+                              {transaction.source === "CASH_TRANSACTION" && transaction.type === "TRANSFER" ? (
+                                <div className="flex flex-col">
+                                  <span className="truncate">{transaction.fromAccountName}</span>
+                                  <span className="text-xs text-muted-foreground">→ {transaction.toAccountName}</span>
+                                </div>
+                              ) : (
+                                transaction.accountName || "-"
+                              )}
+                            </TableCell>
+                            <TableCell className={`font-bold text-xs sm:text-xs text-right ${isIncome ? "text-green-600" : "text-red-600"}`}>
                               {isIncome ? "+" : "-"}
                               {formatCurrency(parseFloat(transaction.amount))}
                             </TableCell>
@@ -781,7 +965,7 @@ export default function CashflowPage() {
                 </CardContent>
               </Card>
               <div className="grid gap-3 sm:hidden">
-                {transactions.map((transaction) => {
+                {filteredTransactions.map((transaction) => {
                   const isIncome = transaction.isIncome
                   const sourceLabel = {
                     CASH_TRANSACTION: "Kas",
@@ -792,9 +976,17 @@ export default function CashflowPage() {
                     <div key={transaction.id} className="rounded-lg border border-yellow-500 dark:border-gray-700 p-3 bg-card">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(transaction.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
-                          </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{new Date(transaction.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                            {transaction.source === "CASH_TRANSACTION" && transaction.type === "TRANSFER" ? (
+                              <span className="truncate max-w-[100px]">{transaction.fromAccountName} → {transaction.toAccountName}</span>
+                            ) : transaction.accountName && (
+                              <>
+                                <span className="text-muted-foreground/50">•</span>
+                                <span className="truncate max-w-[100px]">{transaction.accountName}</span>
+                              </>
+                            )}
+                          </div>
                           <p className="text-xs font-medium mt-1 truncate max-w-[180px]">{transaction.description}</p>
                         </div>
                         <Badge variant="outline" className="text-xs px-1.5 py-0.5">{sourceLabel}</Badge>

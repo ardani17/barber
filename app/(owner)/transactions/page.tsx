@@ -967,9 +967,10 @@ export default function TransactionsPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-[180px]">Tanggal</TableHead>
+                            <TableHead className="w-[140px]">Tanggal</TableHead>
                             <TableHead>Kategori</TableHead>
                             <TableHead>Deskripsi</TableHead>
+                            <TableHead>Akun Kas</TableHead>
                             <TableHead className="text-right">Jumlah</TableHead>
                             <TableHead className="text-right">Aksi</TableHead>
                           </TableRow>
@@ -989,6 +990,9 @@ export default function TransactionsPage() {
                                 {expense.category === "KASBON" && expense.barberName
                                   ? `${expense.description} (${expense.barberName})`
                                   : expense.description}
+                              </TableCell>
+                              <TableCell className="text-xs sm:text-sm text-muted-foreground">
+                                {expense.accountName || "-"}
                               </TableCell>
                               <TableCell className="text-right font-medium text-xs sm:text-sm text-red-600">
                                 {formatCurrency(expense.amount)}
@@ -1040,7 +1044,15 @@ export default function TransactionsPage() {
                               {expense.category === "KASBON" && expense.barberName && (
                                 <p className="text-xs text-muted-foreground truncate">{expense.barberName}</p>
                               )}
-                              <p className="text-xs text-muted-foreground mt-1">{formatDate(expense.date)}</p>
+                              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                <span>{formatDate(expense.date)}</span>
+                                {expense.accountName && (
+                                  <>
+                                    <span className="text-muted-foreground/50">•</span>
+                                    <span className="truncate">{expense.accountName}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                             <p className="text-sm font-bold text-red-600 shrink-0">{formatCurrency(expense.amount)}</p>
                           </div>

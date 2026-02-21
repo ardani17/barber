@@ -662,6 +662,9 @@ export async function getAllTransactions(limit: number = 50) {
         take: limit
       }),
       prisma.expense.findMany({
+        include: {
+          account: true
+        },
         orderBy: {
           date: "desc"
         },
@@ -688,7 +691,10 @@ export async function getAllTransactions(limit: number = 50) {
         description: t.description,
         type: t.type,
         source: "CASH_TRANSACTION" as const,
+        accountId: t.accountId || undefined,
         accountName: t.account?.name || "Akun Dihapus",
+        fromAccountId: t.fromAccountId || undefined,
+        toAccountId: t.toAccountId || undefined,
         fromAccountName: t.fromAccount?.name,
         toAccountName: t.toAccount?.name,
         isIncome: t.type === "DEPOSIT"
@@ -701,7 +707,8 @@ export async function getAllTransactions(limit: number = 50) {
       description: e.title,
       type: e.category,
       source: "EXPENSE" as const,
-      accountName: e.category,
+      accountId: e.accountId || undefined,
+      accountName: e.account?.name || "Akun Dihapus",
       isIncome: false
     }))
 
