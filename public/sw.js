@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.2'
+const CACHE_VERSION = 'v1.0.3'
 const CACHE_NAME = `barberbro-cache-${CACHE_VERSION}`
 const OFFLINE_URL = '/offline'
 
@@ -117,7 +117,9 @@ self.addEventListener('activate', (event) => {
       .then(cacheNames => {
         return Promise.all(
           cacheNames
-            .filter(cacheName => cacheName.startsWith('barberbro-cache-') && cacheName !== CACHE_NAME)
+            // Delete ALL old caches, not just ones starting with barberbro-cache-
+            // This ensures any previous version or mismatched cache is wiped
+            .filter(cacheName => cacheName !== CACHE_NAME)
             .map(cacheName => {
               console.log('[SW] Deleting old cache:', cacheName)
               return caches.delete(cacheName)
@@ -125,6 +127,13 @@ self.addEventListener('activate', (event) => {
         )
       })
       .then(() => self.clients.claim())
+      // Force all clients to reload if they are using an old version
+      .then(async () => {
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({ type: 'VERSION_UPDATE', version: CACHE_VERSION });
+        });
+      })
   )
 })
 
