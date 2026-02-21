@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.1'
+const CACHE_VERSION = 'v1.0.2'
 const CACHE_NAME = `barberbro-cache-${CACHE_VERSION}`
 const OFFLINE_URL = '/offline'
 
@@ -138,14 +138,7 @@ self.addEventListener('fetch', (event) => {
 
   if (isNavigationRequest(request)) {
     event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response.ok) {
-            const cache = caches.open(CACHE_NAME)
-            cache.then(c => c.put(request, response.clone()))
-          }
-          return response
-        })
+      networkFirstStrategy(request)
         .catch(async () => {
           const cachedResponse = await caches.match(request)
           if (cachedResponse) {

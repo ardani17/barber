@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ToasterProvider } from "@/components/toaster-provider"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
+import { ChunkErrorListener } from "@/components/chunk-error-listener"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,6 +113,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ToasterProvider>
+            <ChunkErrorListener />
             <ServiceWorkerRegistration />
             {children}
           </ToasterProvider>
